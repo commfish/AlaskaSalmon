@@ -6,8 +6,10 @@ output: html_document
 ---
 
 ```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, error=FALSE, message=FALSE, warning=FALSE)
 library(ggplot2)
+theme_set(theme_bw())
+library(dplyr)
 setwd("C:/R_code/Stock_Assessment/Chilkoot_Sockeye")
 options(scipen=999) #disable scientific notation
 ```
@@ -21,7 +23,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 ```{r import, include=TRUE}
 Chilkoot <- read.csv("Chilkoot_Sock.csv", sep=",", header = TRUE, check.names = FALSE)
 summary(Chilkoot)
-Chilkoot$logRS <- log(Chilkoot$Recruit/Chilkoot$Spawn) #add log(R/S) to the dataframe
+Chilkoot %>% mutate(logRS = log(Recruit/Spawn)) -> Chilkoot #add log(R/S) to the dataframe
 ```
 
 
@@ -34,7 +36,6 @@ RvS <- ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
   xlab("Spawners (Brood Yr.)") + 
   ylab("Recruits") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="quasipoisson", se=TRUE))+
   geom_abline(slope = 1,linetype="dashed", size =1.2) #Creates the replacement line
 RvS
@@ -49,7 +50,6 @@ RvlogRS <- ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
   xlab("Spawners (Brood Yr.)") + 
   ylab("log(R/S)") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="gaussian", se=TRUE))
 RvlogRS
 ```
@@ -64,7 +64,6 @@ YrvlogRS <- ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
   xlab("Brood Year") + 
   ylab("log(R/S)") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=10), method.args=list(family="gaussian", se=TRUE))
 YrvlogRS
 ggsave("C:/R_code/Stock_Assessment/Chilkoot_Sockeye/ChilkootSR.pdf", plot = last_plot(), dpi = 300)
@@ -107,7 +106,6 @@ Chilkoot$msy.rH <- msy.rH ## adds msy.rH to the data frame
 
 ###Plot the Ricker function, the replacement line and Smsy
 ggplot(Chilkoot, aes(Spawn, Recruit))+
-  theme_bw()+
   geom_point()+
   xlab("# Spawners")+
   ylab("# Recruits")+
@@ -124,4 +122,3 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
 ```
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
