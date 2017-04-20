@@ -9,13 +9,8 @@ output:
 ---
 
 ```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(installr)
-library(magrittr)
-library(dplyr)
-library(readr)
-#updateR()
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
+library(tidyverse)
 options(scipen=999) #disable scientific notation
 ```
 
