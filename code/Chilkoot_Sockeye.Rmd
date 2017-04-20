@@ -26,7 +26,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 
 ##Import the data
 ```{r import, include=TRUE}
-Chilkoot <- read_csv('./data/Chilkoot_Sock.csv', sep=",", header = TRUE, check.names = FALSE)
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv')
 summary(Chilkoot)
 Chilkoot %>% 
   mutate(logRS = log(Recruit/Spawn)) -> Chilkoot #add log(R/S) to the Chilkoot dataframe
