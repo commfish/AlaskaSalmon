@@ -9,14 +9,13 @@ output:
 ---
 
 ```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE)
-library(ggplot2)
-library(installr)
-library(magrittr)
-library(dplyr)
-library(readr)
-#updateR()
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
+library(tidyverse)
+library(gsl)
 options(scipen=999) #disable scientific notation
+theme_set(theme_bw(base_size=12)+ 
+  theme(panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank()))
 ```
 
 ## Purpose
@@ -26,8 +25,11 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 
 ##Import the data
 ```{r import, include=TRUE}
+
 Chilkoot <- read_csv('../data/Chilkoot_Sock.csv')
-summary(Chilkoot)
+glimpse(Chilkoot)
+
+
 Chilkoot %>% 
   mutate(logRS = log(Recruit/Spawn)) -> Chilkoot #add log(R/S) to the Chilkoot dataframe
 ```
@@ -37,29 +39,27 @@ Chilkoot %>%
 ## A Simple scatter plot
 Let's start with a simple scatter plot of brood year escapements (spawners) and estimated number of recruits from thos spawners. Note that ~10 brood year returns are close to, or lower than, the replacement line: 1988, 1989, 1990, 1991, 1992, 1993, 1994, 2003, 2004, 2006. Otherwise, there is an upward trend of increasing numbers of recruits with more spawners and no obvious.
 ```{r scatter, include=TRUE}
-RvS <- ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
+ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
   ylab("Recruits") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="quasipoisson", se=TRUE))+
   geom_abline(slope = 1,linetype="dashed", size =1.2) #Creates the replacement line
-RvS
+
 ```
 
 
 ##A scatter plot of brood-year spawners vs. log(R/S)
 For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, 2001
 ```{r brood_v_spawner, include=TRUE}
-RvlogRS <- ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
+ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
   ylab("log(R/S)") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="gaussian", se=TRUE))
-RvlogRS
+
 ```
 
 
@@ -67,15 +67,14 @@ RvlogRS
 ##Annual Trends
 A quick check for any annual trends in log (R/S): Interesting! The human mind is good at finding patterns that do not necessarily exist, but the GAM fit looks fairly sinusoidal, with a low of log(R/S) at 1990 and peaks at ~1983 and 1999. Even if this isn't entirely sinusoidal, it does appear that productiivty is clustered in 6-8 year groups, with big breaks between BY 1987 and 1988; and between 1994 and 1995. I now wonder if these clusters of productivity could be linked to competition within the lake, and not just escapements. For example, what is the relationship between BY productivity and previous escapements? What is the probability of a relatively high log(R/S) following years of low escapements vs. following several years of high escapements? Perhaps we could examine this through a regression of log(R/S) vs average escapements for previous ~2-4 years. Or, could also use a weighted index of BY escapement and moving average of previous 1-4 previous escapements?? Or, we could compare various aggregated indices and use the model that has the most favorable AIC..or, this might be a lot of work for no gain!
 ```{r annual trends, include=TRUE}
-YrvlogRS <- ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
+ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Brood Year") + 
   ylab("log(R/S)") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  theme_bw()+
   geom_smooth(method="gam", formula=y~s(x, k=10), method.args=list(family="gaussian", se=TRUE))
-YrvlogRS
-ggsave("C:/R_code/Stock_Assessment/Chilkoot_Sockeye/ChilkootSR.pdf", plot = last_plot(), dpi = 300)
+
+ggsave("ChilkootSR.pdf", dpi = 300)
 ```
 
 
@@ -84,7 +83,8 @@ From this you can see small differences in Ssmy calculated using Lambert's W (Sm
 ```{r Lambert, include=TRUE}
 ##linear model of s against the log of r/s with multiplicative error
 rick <- lm(logRS~Spawn, data=Chilkoot) 
-rick
+summary(rick)
+
 #Calculate MSY:
 a <- coef(rick)[1]  ## this is for calculating msy.
 alpha <- exp(coef(rick)[1]) ##this is for prediction
@@ -93,7 +93,7 @@ a
 alpha
 b
 1/b  ###1/b should give # of spawners which will yield maximum# of recruits.
-library(gsl)###Gnu Scientific Library, which contains function for Lambert's W "lambert_w0"
+#Gnu Scientific Library, which contains function for Lambert's W "lambert_w0"
 Smsy <- (1-lambert_W0(exp(1-a)))/b ###Lambert's W function as per the Gnu Scientific Library
 Smsy
 Hilmsy <- (a*(0.5-0.07*a))/b  ###Hilborn Approximation of Smsy
@@ -115,7 +115,6 @@ Chilkoot$msy.rHil <- msy.rH ## adds msy.rHil to the data frame
 
 ###Plot the Ricker function, the replacement line and Smsy
 ggplot(Chilkoot, aes(Spawn, Recruit))+
-  theme_bw()+
   geom_point()+
   xlab("# Spawners")+
   ylab("# Recruits")+
