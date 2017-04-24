@@ -3,8 +3,8 @@ title: "Chilkoot_Sockeye"
 author: "Rich Brenner"
 date: "April 14, 2017"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
   word_document: default
 ---
 
@@ -26,7 +26,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 ##Import the data
 ```{r import, include=TRUE}
 
-Chilkoot <- read_csv('../data/Chilkoot_Sock.csv')
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use:   ../data/ to grab data with knittr, OR just data/ to run from here
 glimpse(Chilkoot)
 
 
@@ -79,7 +79,7 @@ ggsave("ChilkootSR.pdf", dpi = 300)
 
 
 ##Estimate of Smsy calculated from Lambert's W
-From this you can see small differences in Ssmy calculated using Lambert's W (Smsy) vs. Hilborn's approximation (Hmsy).
+From this you can see small differences in Ssmy calculated using Lambert's W (Smsy) vs. Hilborn's approximation (Hilmsy).
 ```{r Lambert, include=TRUE}
 ##linear model of s against the log of r/s with multiplicative error
 rick <- lm(logRS~Spawn, data=Chilkoot) 
@@ -106,11 +106,11 @@ Current EG bounds are shown in red. The solid line is the Ricker model curve. Th
 ```{r Ricker_plot, include=TRUE}
 Chilkoot$pred <- alpha*Chilkoot$Spawn*exp(-b*Chilkoot$Spawn) #predict ricker curve
 msy.r <- alpha*Smsy*exp(-b*Smsy) #predict recruits at MSY using Lambert's W
-msy.rHil <- alpha*Hmsy*exp(-b*Hmsy) #predict recruits at MSY using Hilborn approximation
+msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #predict recruits at MSY using Hilborn approximation
 
 Chilkoot$msy.s <- Smsy ###adds Smsy to the dataframe
 Chilkoot$msy.r <- msy.r  ###adds msy.r to the data frame
-Chilkoot$msy.rHil <- msy.rH ## adds msy.rHil to the data frame
+Chilkoot$msy.rHil <- msy.rHil ## adds msy.rHil to the data frame
 
 
 ###Plot the Ricker function, the replacement line and Smsy
@@ -122,8 +122,8 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
   geom_abline(slope=1, lty=4, size =1.1, color=4, show.legend = FALSE)+
   geom_point(aes(Smsy, msy.r), color=4, size=4)+
   annotate("text", x=Smsy, y=msy.r, label="MSY_Lambert", vjust=-1.2,hjust=-.1, color=4)+ #label Smsy
-  geom_point(aes(Hilmsy, msy.rH), color=2, size=2)+
-  annotate("text", x=Hmsy, y=msy.rHil, label="MSY_Hilborn", vjust=2, hjust=.7, color=2)+ #label Smsy
+  geom_point(aes(Hilmsy, msy.rHil), color=2, size=2)+
+  annotate("text", x=Hilmsy, y=msy.rHil, label="MSY_Hilborn", vjust=2, hjust=.7, color=2)+ #label Smsy
   ylim(0,max(Chilkoot$Recruit))+
   xlim(0,max(Chilkoot$Spawn))+
   geom_vline(aes(xintercept=38000, colour="#BB0000"), show.legend = FALSE)+
