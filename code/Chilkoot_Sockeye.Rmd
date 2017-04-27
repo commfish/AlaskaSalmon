@@ -12,6 +12,8 @@ output:
 knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
 library(tidyverse)
 library(gsl)
+library(nlstools)
+library(plotrix)
 options(scipen=999) #disable scientific notation
 theme_set(theme_bw(base_size=12)+ 
   theme(panel.grid.major = element_blank(),
@@ -26,7 +28,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 ##Import the data
 ```{r import, include=TRUE}
 
-Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use:   ../data/ to grab data with knittr, OR just data/ to run from here
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use:   '../data/ '  to grab data with knittr, OR just data/ to run from R
 glimpse(Chilkoot)
 
 
@@ -59,7 +61,6 @@ ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
   ylab("log(R/S)") +
   geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
   geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="gaussian", se=TRUE))
-
 ```
 
 
@@ -86,8 +87,8 @@ rick <- lm(logRS~Spawn, data=Chilkoot)
 summary(rick)
 
 #Calculate MSY:
-a <- coef(rick)[1]  ## this is for calculating msy.
-alpha <- exp(coef(rick)[1]) ##this is for prediction
+a <- coef(rick)[1]  ## 'a' is for calculating S msy.
+alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction
 b <- -coef(rick)[2]
 a
 alpha
@@ -104,7 +105,7 @@ Hilmsy
 ##Plot the Ricker Curve and estimate of Smsy
 Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
 ```{r Ricker_plot, include=TRUE}
-Chilkoot$pred <- alpha*Chilkoot$Spawn*exp(-b*Chilkoot$Spawn) #predict ricker curve
+Chilkoot$pred <- alpha*Chilkoot$Spawn*exp(-b*Chilkoot$Spawn) #predict Ricker curve
 msy.r <- alpha*Smsy*exp(-b*Smsy) #predict recruits at MSY using Lambert's W
 msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #predict recruits at MSY using Hilborn approximation
 
@@ -129,6 +130,19 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
   geom_vline(aes(xintercept=38000, colour="#BB0000"), show.legend = FALSE)+
   geom_vline(aes(xintercept=86000, colour="#BB0000"), show.legend= FALSE)
 ```
+
+
+
+
+
+```{r}
+
+
+
+
+```
+
+
 
 
 
