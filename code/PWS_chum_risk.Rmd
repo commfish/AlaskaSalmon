@@ -1,0 +1,65 @@
+---
+title: "Risk"
+author: "Benjamin C. Williams"
+date: "April 26, 2017"
+output: html_document
+---
+
+```{r setup, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning=F, message=F, error=F)
+```
+
+Load packages
+```{r}
+library(tidyverse)
+library(readxl)
+theme_set(theme_bw(base_size=12)+ 
+  theme(panel.grid.major = element_blank(),
+  panel.grid.minor = element_blank()))
+```
+
+Read in data
+```{r}
+dat <- read_excel("../data/RiskSEG_PWSChum.xls", 3, col_names=FALSE)
+names(dat) <- c('area', 'year', 's')
+
+data <- split(dat, dat$area)
+```
+
+```{r}
+f.figs <- function(x){
+  ggplot(x, aes(year,s)) + geom_line() + geom_point()
+}
+
+f.acf <- function(x){
+    acf(x$s)
+  pacf(x$s)
+}
+lapply(data, f.figs)
+lapply(data, f.acf)
+```
+
+```{r}
+years = 3
+f.risk <- function(x){
+  x %>% 
+    mutate(log.s = log(s)) %>% 
+    summarise(mean = mean(s), sd = sd(s), lmean = mean(log.s), lsd = sd(log.s)) -> smry
+
+newd <- data.frame(goal=seq(0,max(dat$s),1000))    
+newd %>% 
+  mutate(goal = ifelse(goal<1,1,goal), lng = log(goal), 
+         p.concern = pnorm(lng, smry$lmean, smry$lsd)^years,
+         drop_0.9 = 1-pnorm(lng, (smry$lmean + log(1-0.9)), smry$lsd)^years,
+         drop_0.8 = 1-pnorm(lng, (smry$lmean + log(1-0.8)), smry$lsd)^years) %>% 
+  gather(Risk, value, c(p.concern, drop_0.9, drop_0.8)) %>% 
+  ggplot(aes(goal, value, lty = Risk)) + geom_line() +  
+  scale_linetype_manual(values =c("dashed", "dotted",'solid')) +
+  xlim(0,max(dat$s/3))
+  
+}
+
+lapply(data, f.risk)
+
+```
+
