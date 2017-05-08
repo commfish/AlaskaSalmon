@@ -3,8 +3,8 @@ title: "Chilkoot_Sockeye"
 author: "Rich Brenner"
 date: "April 14, 2017"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
   word_document: default
 ---
 
@@ -21,7 +21,7 @@ theme_set(theme_bw(base_size=12)+
 ```
 
 ## Purpose
-This is a stock assessment (re-assessment) of Chilkoot Lake sockeye AWC 115-33-10200-0010. The current escapement goal range is 38,000 to 86,000 and based on an autoregressive Ricker by Eggers et al. (19) Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
+This is a stock assessment (re-assessment) of Chilkoot Lake sockeye AWC 115-33-10200-0010. The current escapement goal range is 38,000 to 86,000 and based on an autoregressive Ricker by Eggers et al. (2009) Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
 
 Once the lake stabilizes, if it ever does, it would be useful to see some recruitments from large escapements to estimate carrying capacity of the system. They recommended that managers keep escapements at the lower bound of the escapement goal range (then 50,000-90,000) until some consistency in recruitments is observed.
 
