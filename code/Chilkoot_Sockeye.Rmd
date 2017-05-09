@@ -14,7 +14,7 @@ library(tidyverse)
 library(gsl)
 library(nlstools)
 library(plotrix)
-library(car)
+library(boot)
 options(scipen=999) #disable scientific notation
 theme_set(theme_bw(base_size=12)+ 
   theme(panel.grid.major = element_blank(),
@@ -99,10 +99,11 @@ b
 Smsy <- (1-lambert_W0(exp(1-a)))/b ###Lambert's W function as per the Gnu Scientific Library
 Smsy
 
-bs <- bootCase(Smsy, B=1000)
-
 Hilmsy <- (a*(0.5-0.07*a))/b  ###Hilborn Approximation of Smsy
 Hilmsy
+
+#Bootstrapping CIs
+Smsy_Boot <- bootCase(Hilmsy, B=1000)
 ```
 
 
