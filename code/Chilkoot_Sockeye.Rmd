@@ -4,84 +4,97 @@ author: "Rich Brenner"
 date: "April 14, 2017"
 output:
   pdf_document: default
-  html_document: default
-  word_document: default
+csl: canjfas.csl
+bibliography: bibby.bib
 ---
 
-```{r setup, include=TRUE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, error = FALSE)
+```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+                      error = FALSE, tidy.opts = list(width.cutoff = 60), 
+                      tidy=TRUE)
 library(tidyverse)
 library(gsl)
-library(nlstools)
-library(plotrix)
+
 options(scipen=999) #disable scientific notation
 theme_set(theme_bw(base_size=12)+ 
   theme(panel.grid.major = element_blank(),
   panel.grid.minor = element_blank()))
 ```
 
-## Purpose
-This is a stock assessment (re-assessment) of Chilkoot Lake sockeye AWC 115-33-10200-0010. The current escapement goal range is 38,000 to 86,000 and based on an autoregressive Ricker by Eggers et al. (2009) Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
+# Purpose
+This is a stock (re-)assessment of Chilkoot Lake AWC 115-33-10200-0010 sockeye salmon. The current escapement goal range is 38,000 to 86,000 based upon an autoregressive Ricker model [@Eggers2009]. Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
 
 Once the lake stabilizes, if it ever does, it would be useful to see some recruitments from large escapements to estimate carrying capacity of the system. They recommended that managers keep escapements at the lower bound of the escapement goal range (then 50,000-90,000) until some consistency in recruitments is observed.
 
-##Import the data
-```{r import, include=TRUE}
-
-Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use:   '../data/ '  to grab data with knittr, OR just data/ to run from R
-glimpse(Chilkoot)
+**Import the data**
+```{r import, echo=F}
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+  #data with knitr, OR just data/ to run from R
+# glimpse(Chilkoot)
 
 
 Chilkoot %>% 
-  mutate(logRS = log(Recruit/Spawn)) -> Chilkoot #add log(R/S) to the Chilkoot dataframe
+  mutate(logRS = log(Recruit/Spawn)) -> Chilkoot 
+#add log(R/S) to the Chilkoot dataframe
 ```
 
 
 
-## A Simple scatter plot
+**A Simple scatter plot**
+
 Let's start with a simple scatter plot of brood year escapements (spawners) and estimated number of recruits from thos spawners. Note that ~10 brood year returns are close to, or lower than, the replacement line: 1988, 1989, 1990, 1991, 1992, 1993, 1994, 2003, 2004, 2006. Otherwise, there is an upward trend of increasing numbers of recruits with more spawners and no obvious.
-```{r scatter, include=TRUE}
+
+```{r scatter}
 ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
   ylab("Recruits") +
-  geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="quasipoisson", se=TRUE))+
-  geom_abline(slope = 1,linetype="dashed", size =1.2) #Creates the replacement line
+  # geom_label((aes(label=BroodYr)))+ #geom_text works too.but slightly different.
+  geom_smooth(method="gam", formula=y~s(x, k=6), 
+              method.args=list(family="quasipoisson", se=TRUE))+
+  geom_abline(slope = 1,linetype="dashed", size =1.2) #replacement line
 
 ```
 
 
-##A scatter plot of brood-year spawners vs. log(R/S)
+**A scatter plot of brood-year spawners vs. log(R/S)**
+
 For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, 2001
-```{r brood_v_spawner, include=TRUE}
+
+```{r brood_v_spawner}
 ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
   ylab("log(R/S)") +
-  geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  geom_smooth(method="gam", formula=y~s(x, k=6), method.args=list(family="gaussian", se=TRUE))
+  geom_label((aes(label=BroodYr)))+ 
+  geom_smooth(method="gam", formula=y~s(x, k=6), 
+              method.args=list(family="gaussian", se=TRUE))
 ```
 
 
 
-##Annual Trends
+**Annual Trends**
+
 A quick check for any annual trends in log (R/S): Interesting! The human mind is good at finding patterns that do not necessarily exist, but the GAM fit looks fairly sinusoidal, with a low of log(R/S) at 1990 and peaks at ~1983 and 1999. Even if this isn't entirely sinusoidal, it does appear that productiivty is clustered in 6-8 year groups, with big breaks between BY 1987 and 1988; and between 1994 and 1995. I now wonder if these clusters of productivity could be linked to competition within the lake, and not just escapements. For example, what is the relationship between BY productivity and previous escapements? What is the probability of a relatively high log(R/S) following years of low escapements vs. following several years of high escapements? Perhaps we could examine this through a regression of log(R/S) vs average escapements for previous ~2-4 years. Or, could also use a weighted index of BY escapement and moving average of previous 1-4 previous escapements?? Or, we could compare various aggregated indices and use the model that has the most favorable AIC..or, this might be a lot of work for no gain!
-```{r annual trends, include=TRUE}
+
+```{r annual trends}
 ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Brood Year") + 
   ylab("log(R/S)") +
-  geom_label((aes(label=BroodYr)))+ #geom_text works too....but slightly different.
-  geom_smooth(method="gam", formula=y~s(x, k=10), method.args=list(family="gaussian", se=TRUE))
+  geom_label((aes(label=BroodYr)))+ 
+  geom_smooth(method="gam", formula=y~s(x, k=10), 
+              method.args=list(family="gaussian", se=TRUE))
 
-ggsave("ChilkootSR.pdf", dpi = 300)
+# ggsave("ChilkootSR.pdf", dpi = 300)
 ```
 
 
-##Estimate of Smsy calculated from Lambert's W
-From this you can see small differences in Ssmy calculated using Lambert's W (Smsy) vs. Hilborn's approximation (Hilmsy).
-```{r Lambert, include=TRUE}
+**Estimate of Smsy calculated from Lambert's *W***
+
+From this you can see small differences in *S~smy~* calculated using Lambert's *W* (*S~msy~*) vs. Hilborn's approximation (*Hil~msy~*).
+
+```{r Lambert}
 ##linear model of s against the log of r/s with multiplicative error
 rick <- lm(logRS~Spawn, data=Chilkoot) 
 summary(rick)
@@ -95,23 +108,27 @@ alpha
 b
 1/b  ###1/b should give # of spawners which will yield maximum# of recruits.
 #Gnu Scientific Library, which contains function for Lambert's W "lambert_w0"
-Smsy <- (1-lambert_W0(exp(1-a)))/b ###Lambert's W function as per the Gnu Scientific Library
+###Lambert's W function as per the Gnu Scientific Library
+Smsy <- (1-lambert_W0(exp(1-a)))/b 
 Smsy
 Hilmsy <- (a*(0.5-0.07*a))/b  ###Hilborn Approximation of Smsy
 Hilmsy
 ```
 
 
-##Plot the Ricker Curve and estimate of Smsy
-Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
-```{r Ricker_plot, include=TRUE}
-Chilkoot$pred <- alpha*Chilkoot$Spawn*exp(-b*Chilkoot$Spawn) #predict Ricker curve
-msy.r <- alpha*Smsy*exp(-b*Smsy) #predict recruits at MSY using Lambert's W
-msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #predict recruits at MSY using Hilborn approximation
+**Plot the Ricker Curve and estimate of Smsy**
 
-Chilkoot$msy.s <- Smsy ###adds Smsy to the dataframe
-Chilkoot$msy.r <- msy.r  ###adds msy.r to the data frame
-Chilkoot$msy.rHil <- msy.rHil ## adds msy.rHil to the data frame
+Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
+
+```{r Ricker_plot}
+msy.r <- alpha * Smsy * exp(-b * Smsy) #predict recruits at MSY via Lambert's W
+msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #predict recruits at MSY Hilborn 
+
+Chilkoot %>% 
+  mutate(pred = alpha * Spawn * exp(-b * Spawn),
+         msy.s = Smsy,
+         msy.r = msy.r,
+         msy.rHil = Hilmsy) -> Chilkoot
 
 
 ###Plot the Ricker function, the replacement line and Smsy
@@ -132,29 +149,16 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
 ```
 
 
+**Investigate autocorrelation and partial autocorrelation**
 
-
-
-```{r}
-
-
-
-
-```
-
-
-
-
-
-##Investigage autocorrelation and partial autocorrelation
 From the figure below, it appears that escapements are autocorrelated at lag = 1, which
 should probably be addressed in subsequent analyses.....maybe I should have started
 with this!
-```{r Autocorrelation, include=TRUE}
+```{r Autocorrelation}
 acf(x=Chilkoot$Spawn)
 pacf(x=Chilkoot$Spawn)
 ```
 
+# References
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
