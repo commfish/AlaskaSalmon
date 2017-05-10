@@ -9,7 +9,7 @@ bibliography: bibby.bib
 ---
 
 ```{r setup, include=FALSE, echo=FALSE, message=FALSE}
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, 
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, 
                       error = FALSE, tidy.opts = list(width.cutoff = 60), 
                       tidy=TRUE)
 library(tidyverse)
@@ -27,8 +27,9 @@ This is a stock (re-)assessment of Chilkoot Lake AWC 115-33-10200-0010 sockeye s
 Once the lake stabilizes, if it ever does, it would be useful to see some recruitments from large escapements to estimate carrying capacity of the system. They recommended that managers keep escapements at the lower bound of the escapement goal range (then 50,000-90,000) until some consistency in recruitments is observed.
 
 **Import the data**
+
 ```{r import, echo=F}
-Chilkoot <- read_csv('data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
 
@@ -90,16 +91,20 @@ ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
 ```
 
 
-**Estimate of Smsy calculated from Lambert's *W***
+**Estimate of *S~msy~* calculated from Lambert's *W***
 
 From this you can see small differences in *S~smy~* calculated using Lambert's *W* (*S~msy~*) vs. Hilborn's approximation (*Hil~msy~*).
 
-```{r Lambert}
-##linear model of s against the log of r/s with multiplicative error
+Linear regression of r/s vs s with multiplicative error.
+
+```{r lr}
 rick <- lm(logRS~Spawn, data=Chilkoot) 
 summary(rick)
+```
 
-#Calculate MSY:
+Calculate MSY.
+
+```{r}
 a <- coef(rick)[1]  ## 'a' is for calculating S msy, it is in the log space
 a
 alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction of recruits, this takes it from a log space to numbers of fish.
@@ -121,7 +126,7 @@ Hilmsy
 ```
 
 
-**Plot the Ricker Curve and estimate of Smsy**
+**Plot the Ricker Curve and estimate of *S~msy~***
 
 Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
 
@@ -161,11 +166,15 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
 From the figure below, it appears that escapements are autocorrelated at lag = 1, which
 should probably be addressed in subsequent analyses.....maybe I should have started
 with this!
+
 ```{r Autocorrelation}
 acf(x=Chilkoot$Spawn)
 pacf(x=Chilkoot$Spawn)
 ```
 
 # References
-
+\setlength{\parindent}{-0.2in}
+\setlength{\leftskip}{0.2in}
+\setlength{\parskip}{8pt}
+\noindent
 
