@@ -22,15 +22,15 @@ theme_set(theme_bw(base_size=12)+
 ```
 
 # Purpose
-This is a stock (re-)assessment of Chilkoot Lake AWC 115-33-10200-0010 sockeye salmon. The current escapement goal range is 38,000 to 86,000 based upon an autoregressive Ricker model [@Eggers2009;@Brenner2012]. Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
+This is a stock (re-)assessment of Chilkoot Lake AWC 115-33-10200-0010 sockeye salmon. The current escapement goal range is 38,000 to 86,000 based upon an autoregressive Ricker model [@Eggers2009]. Previously, Hal Geiger and Xinxian Zhang drafted an EG report, that was never finished. They used a stock-recruitment in a Bayesian framework with modifications to allow time-varying parameters, but failed to come up with a reliable result because the system was too unstable. Their conclusions:
 
 Once the lake stabilizes, if it ever does, it would be useful to see some recruitments from large escapements to estimate carrying capacity of the system. They recommended that managers keep escapements at the lower bound of the escapement goal range (then 50,000-90,000) until some consistency in recruitments is observed.
 
 **Import the data**
 ```{r import, echo=F}
-Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+Chilkoot <- read_csv('data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
-# glimpse(Chilkoot)
+glimpse(Chilkoot)
 
 
 Chilkoot %>% 
@@ -42,7 +42,7 @@ Chilkoot %>%
 
 **A Simple scatter plot**
 
-Let's start with a simple scatter plot of brood year escapements (spawners) and estimated number of recruits from thos spawners. Note that ~10 brood year returns are close to, or lower than, the replacement line: 1988, 1989, 1990, 1991, 1992, 1993, 1994, 2003, 2004, 2006. Otherwise, there is an upward trend of increasing numbers of recruits with more spawners and no obvious.
+Let's start with a simple scatter plot of brood year escapements (spawners) and estimated number of recruits from thos spawners. Note that ~10 brood year returns are close to, or lower than, the replacement line: 1988, 1989, 1990, 1991, 1992, 1993, 1994, 2003, 2004, 2006. Otherwise, there is an upward trend of increasing numbers of recruits with more spawners and no obvious attenuation. Historically, some of  the largest yields have come from escapements >80K, but there has also been 2 years in which yields were below the replacement line at these large escapements.
 
 ```{r scatter}
 ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
@@ -59,7 +59,7 @@ ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
 
 **A scatter plot of brood-year spawners vs. log(R/S)**
 
-For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, 2001
+For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, 2001.
 
 ```{r brood_v_spawner}
 ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
@@ -125,14 +125,16 @@ Hilmsy
 Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
 
 ```{r Ricker_plot}
-msy.r <- alpha * Smsy * exp(-b * Smsy) #predict recruits at MSY via Lambert's W
-msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #predict recruits at MSY Hilborn 
+msy.r <- alpha * Smsy * exp(-b * Smsy) #recruits at MSY via Lambert's W
+msy.r
+msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #recruits at MSY Hilborn 
+msy.rHil
 
 Chilkoot %>% 
-  mutate(pred = alpha * Spawn * exp(-b * Spawn),
+  mutate(pred = alpha * Spawn * exp(-b * Spawn), #predicted number of recruits at observed numbers of spawners
          msy.s = Smsy,
          msy.r = msy.r,
-         msy.rHil = Hilmsy) -> Chilkoot
+         msy.rHil = msy.rHil) -> Chilkoot
 
 
 ###Plot the Ricker function, the replacement line and Smsy
@@ -141,11 +143,11 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
   xlab("# Spawners")+
   ylab("# Recruits")+
   geom_line(aes(Spawn, pred), size=1.2)+ #shows the Ricker curve
-  geom_abline(slope=1, lty=4, size =1.1, color=4, show.legend = FALSE)+
+  geom_abline(slope=1, lty=4, size =1.1, color=4, show.legend = FALSE)+ #the 1:1 line
   geom_point(aes(Smsy, msy.r), color=4, size=4)+
-  annotate("text", x=Smsy, y=msy.r, label="MSY_Lambert", vjust=-1.2,hjust=-.1, color=4)+ #label Smsy
+  annotate("text", x=Smsy, y=msy.r, label="MSY_Lambert", vjust=-1.2,hjust=-.1, color=4)+ #label 'Lambert' Smsy
   geom_point(aes(Hilmsy, msy.rHil), color=2, size=2)+
-  annotate("text", x=Hilmsy, y=msy.rHil, label="MSY_Hilborn", vjust=2, hjust=.7, color=2)+ #label Smsy
+  annotate("text", x=Hilmsy, y=msy.rHil, label="MSY_Hilborn", vjust=2, hjust=.7, color=2)+ #label Hilborn Smsy
   ylim(0,max(Chilkoot$Recruit))+
   xlim(0,max(Chilkoot$Spawn))+
   geom_vline(aes(xintercept=38000, colour="#BB0000"), show.legend = FALSE)+
