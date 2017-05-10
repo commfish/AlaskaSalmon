@@ -60,7 +60,7 @@ ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
 
 **A scatter plot of brood-year spawners vs. log(R/S)**
 
-For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, 2001.
+For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, and 2001.
 
 ```{r brood_v_spawner}
 ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
