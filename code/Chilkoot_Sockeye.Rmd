@@ -100,12 +100,13 @@ rick <- lm(logRS~Spawn, data=Chilkoot)
 summary(rick)
 
 #Calculate MSY:
-a <- coef(rick)[1]  ## 'a' is for calculating S msy.
-alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction
-b <- -coef(rick)[2]
+a <- coef(rick)[1]  ## 'a' is for calculating S msy, it is in the log space
 a
+alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction of recruits, this takes it from a log space to numbers of fish.
 alpha
+b <- -coef(rick)[2]  #Note that it is asking for the negative coeficient of the ricker function.
 b
+
 1/b  ###1/b should give # of spawners which will yield maximum# of recruits.
 #Gnu Scientific Library, which contains function for Lambert's W "lambert_w0"
 ###Lambert's W function as per the Gnu Scientific Library
@@ -115,7 +116,7 @@ Smsy
 Hilmsy <- (a*(0.5-0.07*a))/b  ###Hilborn Approximation of Smsy
 Hilmsy
 
-# #Bootstrapping CIs
+# #Bootstrapping CIs.....need to do another way. Realy need to calculate CIs for Smsy and then for the resulting Rmsy
 # Smsy_Boot <- bootCase(Hilmsy, B=1000)
 ```
 
@@ -125,9 +126,9 @@ Hilmsy
 Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
 
 ```{r Ricker_plot}
-msy.r <- alpha * Smsy * exp(-b * Smsy) #recruits at MSY via Lambert's W
+msy.r <- alpha * Smsy * exp(-b * Smsy) #recruits at MSY via Lambert's W in numbers of fish (no longer log space)
 msy.r
-msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #recruits at MSY Hilborn 
+msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #recruits at MSY Hilborn in numbers of fish (no longer log space)
 msy.rHil
 
 Chilkoot %>% 
