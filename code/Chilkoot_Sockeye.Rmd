@@ -29,7 +29,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 **Import the data**
 
 ```{r import, echo=F}
-Chilkoot <- read_csv('data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
 
