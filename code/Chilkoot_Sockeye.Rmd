@@ -165,13 +165,10 @@ ggplot(Chilkoot, aes(Spawn, Recruit))+
 
 From the figure below, it appears that escapements are autocorrelated at lag = 1, which
 should probably be addressed in subsequent analyses.....maybe I should have started
-<<<<<<< HEAD
 with this! Note the continuous decline in autocorrelation out to ~lag 8. Very interesting that it 
 is such a linear decline.
-=======
-with this!
 
->>>>>>> c5d16004ba478b1eb598fde7316ff87c5fe823dd
+
 ```{r Autocorrelation}
 acf(x=Chilkoot$Spawn)
 
