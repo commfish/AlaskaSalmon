@@ -8,7 +8,7 @@ csl: canjfas.csl
 bibliography: bibby.bib
 ---
 
-```{r setup, include=FALSE, echo=FALSE, message=FALSE}
+```{r setup and libraries}
 knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE, 
                       error = FALSE, tidy.opts = list(width.cutoff = 60), 
                       tidy=TRUE)
@@ -28,7 +28,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 
 **Import the data**
 
-```{r import, echo=F}
+```{r import data}
 Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
@@ -45,7 +45,7 @@ Chilkoot %>%
 
 Let's start with a simple scatter plot of brood year escapements (spawners) and estimated number of recruits from thos spawners. Note that ~10 brood year returns are close to, or lower than, the replacement line: 1988, 1989, 1990, 1991, 1992, 1993, 1994, 2003, 2004, 2006. Otherwise, there is an upward trend of increasing numbers of recruits with more spawners and no obvious attenuation. Historically, some of  the largest yields have come from escapements >80K, but there has also been 2 years in which yields were below the replacement line at these large escapements.
 
-```{r scatter}
+```{r simple scatter plot}
 ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
@@ -62,7 +62,7 @@ ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
 
 For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, and 2001.
 
-```{r brood_v_spawner}
+```{r brood vs. spawner}
 ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
     geom_point(size=4, color = "black", shape = 18) +
   xlab("Spawners (Brood Yr.)") + 
@@ -97,14 +97,14 @@ From this you can see small differences in *S~smy~* calculated using Lambert's *
 
 Linear regression of r/s vs s with multiplicative error.
 
-```{r lr}
+```{r linearized Ricker}
 rick <- lm(logRS~Spawn, data=Chilkoot) 
 summary(rick)
 ```
 
 Calculate MSY.
 
-```{r}
+```{r MSY calculation}
 a <- coef(rick)[1]  ## 'a' is for calculating S msy, it is in the log space
 a
 alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction of recruits, this takes it from a log space to numbers of fish.
@@ -130,7 +130,7 @@ Hilmsy
 
 Current EG bounds are shown in red. The solid line is the Ricker model curve. The blue dot indicates Smsy as calculated using Lambert's W.
 
-```{r Ricker_plot}
+```{r Ricker plot}
 msy.r <- alpha * Smsy * exp(-b * Smsy) #recruits at MSY via Lambert's W in numbers of fish (no longer log space)
 msy.r
 msy.rHil <- alpha*Hilmsy*exp(-b*Hilmsy) #recruits at MSY Hilborn in numbers of fish (no longer log space)
@@ -169,7 +169,7 @@ with this! Note the continuous decline in autocorrelation out to ~lag 8. Very in
 is such a linear decline.
 
 
-```{r Autocorrelation}
+```{r examine autocorrelation}
 acf(x=Chilkoot$Spawn)
 
 pacf(x=Chilkoot$Spawn)
@@ -177,7 +177,11 @@ pacf(x=Chilkoot$Spawn)
 
 
 **Discussion**
+
 Given the existence of autocorrelation between years, our results lend support for using an autoregressive Ricker model.
+
+
+
 
 # References
 \setlength{\parindent}{-0.2in}
