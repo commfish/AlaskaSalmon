@@ -175,6 +175,10 @@ acf(x=Chilkoot$Spawn)
 pacf(x=Chilkoot$Spawn)
 ```
 
+
+**Discussion**
+Given the existence of autocorrelation between years, our results lend support for using an autoregressive Ricker model.
+
 # References
 \setlength{\parindent}{-0.2in}
 \setlength{\leftskip}{0.2in}
