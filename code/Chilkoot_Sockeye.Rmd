@@ -58,6 +58,8 @@ ggplot(data=Chilkoot, aes(x=Spawn, y=Recruit))+
 ```
 
 
+
+
 **A scatter plot of brood-year spawners vs. log(R/S)**
 
 For some years, relatively high productivity only occurs at low spawner abundance: 1995, 1998, 1999, and 2009. However, for other years, relatively high productivity occurs with higher spawner abundance: 1981, 1982, 1983, 1984, 1985, 1986, 2007, and 2001.
@@ -71,6 +73,8 @@ ggplot(Chilkoot, aes(x=Spawn, y=logRS))+
   geom_smooth(method="gam", formula=y~s(x, k=6), 
               method.args=list(family="gaussian", se=TRUE))
 ```
+
+
 
 
 
@@ -176,7 +180,17 @@ pacf(x=Chilkoot$Spawn)
 ```
 
 
-**Discussion**
+**Bayesian analysis--code from Steve Fleischman and Xinxian Zhang**
+```{r Bayesian approach}
+
+
+
+
+```
+
+
+
+# Discussion
 
 Given the existence of autocorrelation between years, our results lend support for using an autoregressive Ricker model.
 
