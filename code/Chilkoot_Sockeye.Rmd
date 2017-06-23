@@ -193,6 +193,7 @@ pacf(x=Chilkoot$Spawn)
 # Discussion
 
 Given the existence of autocorrelation between years, our results lend support for using an autoregressive Ricker model.
+We recommend putting off consideration of a change to this goal until returns from large escapements during the past several years have been realized. Such returns will add much needed contrast to the spawner-recruitment model.
 
 
 
