@@ -112,7 +112,7 @@ a <- coef(rick)[1]  ## 'a' is for calculating S msy, it is in the log space sinc
 a
 alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction of recruits, this takes it from a log space to numbers of fish.
 alpha
-coef(rick)[2] #This is Beta!
+coef(rick)[2]
 b <- -coef(rick)[2]  #Note that it is asking for the negative coeficient of the Ricker Beta function. 
 b
 
