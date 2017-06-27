@@ -33,7 +33,6 @@ Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
 
-
 Chilkoot %>% 
   mutate(logRS = log(Recruit/Spawn)) -> Chilkoot 
 #add log(R/S) to the Chilkoot dataframe
@@ -113,10 +112,11 @@ a <- coef(rick)[1]  ## 'a' is for calculating S msy, it is in the log space sinc
 a
 alpha <- exp(coef(rick)[1]) ##'alpha' is for prediction of recruits, this takes it from a log space to numbers of fish.
 alpha
-b <- -coef(rick)[2]  #Note that it is asking for the negative coeficient of the ricker function. What about beta??
+coef(rick)[2] #This is Beta!
+b <- -coef(rick)[2]  #Note that it is asking for the negative coeficient of the Ricker Beta function. 
 b
 
-1/b  ###1/b should give # of spawners which will yield maximum# of recruits. 
+1/b  ###1/b should give # of spawners which will yield maximum# of recruits: Smax. 
 
 #Gnu Scientific Library, which contains function for Lambert's W "lambert_w0"
 ###Lambert's W function as per the Gnu Scientific Library
@@ -183,9 +183,21 @@ pacf(x=Chilkoot$Spawn)
 
 **Bayesian analysis--code from Steve Fleischman and Xinxian Zhang**
 ```{r Bayesian approach}
+library("arm")
+library("R2WinBUGS")
+brood<-read.table("Chilkoot_Sock.csv", header=TRUE, sep=",")
+sr<-brood[,2:3] #retrieve spawner recruit data for one stock
+colnames(sr)<-c("S","R") #rename the column names
+sr<-na.omit(sr)  #remove missing rows with missing values(na)
+sr$lnRS<-log(sr$R/sr$S) #add one column,lnRS
+n<-nrow(sr)
+sr.data<-list(n=n,S=sr$S, lnRS=sr$lnRS)
 
-
-
+#check AR(1)
+library(lmtest)
+dwtest(sr$lnRS ~ sr$S)
+mylm <- lm(lnRS ~ S, sr)
+pacf(residuals(mylm))
 
 
 
