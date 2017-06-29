@@ -1,3 +1,6 @@
+
+#Original code was from Steve Fleischman and Xinxian Zhang. code was then modified
+#and converted to JAGS by Sara Miller 28 June 2017
 #load----
 library(arm)
 library(R2WinBUGS)
