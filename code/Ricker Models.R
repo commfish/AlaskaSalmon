@@ -1,6 +1,8 @@
 
-#Original code was from Steve Fleischman and Xinxian Zhang. code was then modified
-#and converted to JAGS by Sara Miller 28 June 2017
+#Original code was from Steve Fleischman and Xinxian Zhang. code was modified
+#and converted to JAGS by Sara Miller on 28 June 2017 and maintained
+#Rich Brenner.
+
 #load----
 library(arm)
 library(R2WinBUGS)
