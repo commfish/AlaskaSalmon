@@ -3,12 +3,12 @@
 #and converted to JAGS by Sara Miller on 28 June 2017 and maintained
 #Rich Brenner.
 
+
 #load----
 library(arm)
-library(R2WinBUGS)
 library(lmtest)
-library(R2OpenBUGS)
 library(rjags)
+
 
 #data----
 brood<-read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
@@ -40,7 +40,7 @@ Ricker=function(){
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
   
   mean2.lnRS[1]     <- mean1.lnRS[1] + phi * resid.red.0  
-  for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }   #AR1
+  for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }   #non-AR model
   
   for(y in 1:n) {  mean1.lnRS[y] <- lnalpha - beta * S[y]  }
   for(y in 1:n) {  resid.red[y]     <- lnRS[y] - mean1.lnRS[y]  }
@@ -212,3 +212,4 @@ for(j in seq(1,nvars,int)){
     lines(density(post.samp[[3]][,i+j]),col='green')
   }}
 dev.off()
+
