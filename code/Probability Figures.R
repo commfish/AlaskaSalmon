@@ -182,7 +182,7 @@ ggsave("figures/0.8_0.7.png", dpi=200, dev='png', width=7, height=6, units='in')
 theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
 options(scipen=99999)
 
-QM <- read.csv("data/processed/QM.csv")
+QM <- read.csv("data/processed/QM.csv") #I'm getting an error message here!!!
 mQM <- melt(QM, id.vars='Escapement')
 windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+

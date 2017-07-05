@@ -50,13 +50,13 @@ Ricker=function(){
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
   #lnalpha.c <- lnalpha
-  alpha<-exp(lnalpha)
+  alpha<-exp(lnalpha)  #exponentiate to solve for alpha
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
-  S.msy <- S.eq * (0.5 - 0.07*lnalpha.c)
+  S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
-  R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)
-  MSY<-step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
+  R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)  #Solves for recruits at Smsy
+  MSY<- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
   
