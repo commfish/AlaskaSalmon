@@ -53,7 +53,7 @@ Ricker=function(){
   alpha<-exp(lnalpha)  #exponentiate to solve for alpha
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
-  S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy
+  S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy...could use Scheuerell solution too....
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)  #Solves for recruits at Smsy
   MSY<- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.

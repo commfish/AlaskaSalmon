@@ -46,6 +46,7 @@ attach(coda)
 profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
 xa = seq(xa.start, xa.end, by=i) 
 x =(xa+i)*z
+
 # empty dataframes
 dat <- data.frame(S0=rep(1, length(coda[,1])))
 dat1 <- data.frame(S0=rep(0, length(coda[,1])))
@@ -68,7 +69,8 @@ for (i in 1:length(xa)){
   dat7[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.9*coda$MSY.c), 1,0)
   dat8[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.9*coda$Rmax), 1,0)
   dat9[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])-x[i]
-  }
+}
+
 # Overfishing estimate ----
 dat %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> of_0.7 
 dat3 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> of_0.8  
@@ -81,6 +83,7 @@ dat7 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %
 dat2 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.7 
 dat5 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.8 
 dat8 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.9 
+
 #Bind dataframes together
 Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
 names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
@@ -104,7 +107,7 @@ theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()))
 Y <- read.csv("data/processed/Y.csv")
-Y["Optimal_Yield0.7"] <-Y$oy_0.7 
+Y["Optimal_Yield0.7"] <-Y$oy_0.7  #This is a 70% probability of achieving 90% of MSY
 Y["Overfishing0.7"] <-Y$of_0.7 
 Y["Optimal_Recruitment0.7"] <-Y$or_0.7 
 Y<-subset(Y, select=c(Escapement, Optimal_Yield0.7, Overfishing0.7, Optimal_Recruitment0.7)) 
@@ -182,7 +185,7 @@ ggsave("figures/0.8_0.7.png", dpi=200, dev='png', width=7, height=6, units='in')
 theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
 options(scipen=99999)
 
-QM <- read.csv("data/processed/QM.csv") #I'm getting an error message here!!!
+QM <- read.csv("data/processed/QM.csv") #I'm getting an error message here!!! left over code from another project??
 mQM <- melt(QM, id.vars='Escapement')
 windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
