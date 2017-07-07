@@ -8,37 +8,38 @@ library(lmtest)
 library(rjags)
 library(R2OpenBUGS)
 library(gdata)
+
 #data----
 brood<-read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
 sr<-brood[,2:3] #retrieve spawner recruit data for one stock
 colnames(sr)<-c("S","R") #rename the column names
 sr<-na.omit(sr)  #remove missing rows with missing values(na)
-sr$lnRS<-log(sr$R/sr$S) #add one column,lnRS
+sr$lnRS<-log(sr$R/sr$S) #add one column called lnRS
 n<-nrow(sr)
 sr.data<-list(n=n,S=sr$S, lnRS=sr$lnRS)
-#analysis----
 
+#analysis----
 #check AR(1)
 dwtest(sr$lnRS ~ sr$S)
 mylm <- lm(lnRS ~ S, sr)
 pacf(residuals(mylm))
 
+
 ##Ricker model for stock-recruitment analysis 
 #Created by Steve Fleischman 
-
-#Ricker without autocorrelation
+#Ricker WITHOUT autocorrelation
 Ricker=function(){
   
   lnalpha ~ dunif(0, 10) 
   beta ~ dunif(0, 10)                 
-  phi <- 0                #get rid of AR(1)
+  phi <- 0                #get rid of AR(1) since this model does not account for autocorrelation
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
   
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
   
   mean2.lnRS[1]     <- mean1.lnRS[1] + phi * resid.red.0  
-  for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }  #no autocorrelation model
+  for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }  #NO autocorrelation model
   
   for(y in 1:n) {  mean1.lnRS[y] <- lnalpha - beta * S[y]  }
   for(y in 1:n) {  resid.red[y]     <- lnRS[y] - mean1.lnRS[y]  }
@@ -73,12 +74,12 @@ Ricker=function(){
 model_file_loc=paste("code/Chilkoot_Sockeye.txt", sep="")
 write.model(Ricker, paste("code/Chilkoot_Sockeye.txt", sep=""))
 
-#Ricker with autocorrelation
+#Ricker model WITH autocorrelation
 AR=function(){
   
   lnalpha ~ dunif(0, 10)
   beta ~ dunif(0, 10) 
-  phi ~ dunif(-1,1)                #AR(1)
+  phi ~ dunif(-1,1)                #AR(1) model so phi does not = zero
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
   
@@ -99,7 +100,7 @@ AR=function(){
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
   #lnalpha.c <- lnalpha
-  alpha<-exp(lnalpha)
+  alpha<-exp(lnalpha) #exponentiate to solve for alpha 
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c)
