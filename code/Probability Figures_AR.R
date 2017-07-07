@@ -35,7 +35,7 @@ theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
 # library(cowplot)
 #data----
 #loadfonts(device="win") #only need to do this once; takes awhile to run!
-coda <- read.csv("results/coda.samples.Ricker.csv") #Load Data File
+coda <- read.csv("results/Ricker_AR_coda.csv") #Load Data File
 
 #data clean----
 #Create profile parameters
@@ -46,7 +46,7 @@ coda %>%
 					      MSY.c = R.msy.c-S.msy.c, 
 					      Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
 
-attach(coda)
+
 #analysis----
 #create function for probability profiles and figures
 
