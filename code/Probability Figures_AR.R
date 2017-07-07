@@ -15,24 +15,8 @@ windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+ 
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()))
-# library(plyr)
-# library(reshape2)
-# library(lattice)
-# library(latticeExtra)
-# library(gridExtra)
-# library(ggplot2)
-# library(MASS)
-# library(survival)
-# library(scatterplot3d)
-# library(vcd)
-# library(grid)
-# library(calibrate)
-# library(scales)
-# library(extrafont)
-# library(RColorBrewer)
-# library(tidyverse)
-# library(reshape2)
-# library(cowplot)
+library(reshape2)
+
 #data----
 #loadfonts(device="win") #only need to do this once; takes awhile to run!
 coda <- read.csv("results/Ricker_AR_coda.csv") #Load Data File
