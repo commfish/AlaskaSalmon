@@ -31,9 +31,9 @@ coda %>%
 					      Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
 
 
+
 #analysis----
 #create function for probability profiles and figures
-
 profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
   xa = seq(xa.start, xa.end, by=i) 
   x =(xa+i)*z
@@ -69,6 +69,8 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
     dat8[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.9*coda$Rmax), 1,0)
     dat9[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])-x[i]
     }
+  
+  
   # Overfishing estimate ----
   f.over <- function(x){
     x %>% 
@@ -116,8 +118,9 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
   write.csv(qm,("data/processed/QM.AR.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y.AR.csv"), row.names=FALSE)
   
+  
+  
   #create probability profile plots (0.7)
-
   Y <- read.csv("data/processed/Y.AR.csv")
   
   Y %>% 
@@ -150,7 +153,6 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
   ggsave("figures/0.9.AR.png", dpi=200, dev='png', width=8, height=5, units='in')
   
   
-
   
   Y %>% 
     dplyr::select(Escapement, OY0.7 = oy_0.7, OY0.8 = of_0.8) %>% 
@@ -217,6 +219,7 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
   
   ggsave("figures/Expected Sustained Yield AR (QM).png", dpi=200, dev='png', width=8, height=5, units='in')
 }
+
 #Run function
 profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
 
