@@ -6,8 +6,8 @@
 #i and z act as ways to change range of escapement based on stock size
 
 rm(list=ls(all=T))#Remove previous variables.
-LowerB<-65000 #lower bound of recommended escapement goal range
-UpperB<-140000 #upper bound of recommended escapement goal range
+LowerB<-38000 #lower bound of recommended escapement goal range
+UpperB<-86000 #upper bound of recommended escapement goal range
 
 #load----
 #Load Packages
@@ -23,9 +23,11 @@ library(reshape2)
 
 #data----
 #loadfonts(device="win") #only need to do this once; takes awhile to run!
-coda <- read_csv("data/Coda.csv") #Load Data File
-Parameters <- read_csv("data/Parameters.csv") #Load Data File
-p_q_Nya <- read_csv("data/p_q_Nya.csv") #Load Data File
+coda <- read_csv("results/Ricker_AR_coda.csv") #Load Data File
+#Parameters <- read_csv("data/Parameters.csv") #Load Data File
+#p_q_Nya <- read_csv("data/p_q_Nya.csv") #Load Data File
+
+
 
 #data clean----
 #Create profile parameters
@@ -89,8 +91,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   or_0.8 <- f.over(dat5)
   or_0.9 <- f.over(dat8)
   
-  #Bind dataframes together
   
+  #Bind dataframes together
   Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
   
   names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
@@ -119,8 +121,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
   
   
-  #create probability profile plots (0.7)
-  
+  #create probability profile plots for 0.7, 0.8, and 0.9 probabilities of achieving 90% of MSY
   Y %>% 
     dplyr::select(Escapement, Optimal_Yield0.7 = oy_0.7, 
                   Overfishing0.7 = of_0.7, Optimal_Recruitment0.7 = or_0.7) %>% 
@@ -159,7 +160,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   
   Y %>% 
-    dplyr::select(Escapement, OY0.9 = oy_0.9, OY0.8 = of_0.8, OR0.9=or_0.9, 
+    dplyr::select(Escapement, OY0.9 = oy_0.9, OY0.8 = of_0.8, OR0.9 = or_0.9, 
                   OR0.8 = or_0.8, OF0.9 = of_0.9, OF0.8 = of_0.8) %>% 
     melt(., id.vars = 'Escapement')  %>% 
     mutate(sra = ifelse(grepl("OY0",variable), "Yield Profile",
@@ -190,6 +191,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   ggsave("figures/expected_sustained_yield.png", dpi=200, width=8, height=5, units='in')
 }
+
 #Run function
 f.profile(i=10,z=500,xa.start=0, xa.end=700, coda)#can change i,z, xa.start, xa.end
 

@@ -1,6 +1,6 @@
 #Original code was from Steve Fleischman and Xinxian Zhang. code was modified
-#and converted to JAGS by Sara Miller on 28 June 2017 and maintained
-#Rich Brenner.
+#and converted to JAGS by Sara Miller on 28 June 2017 and modified and
+#maintained by Rich Brenner.
 
 #load----
 library(arm)
