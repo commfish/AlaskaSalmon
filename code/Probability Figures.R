@@ -5,6 +5,7 @@
 #results are in data/processed/..
 #i and z act as ways to change range of escapement based on stock size
 
+
 rm(list=ls(all=T))#Remove previous variables.
 LowerB<-65000 #lower bound of recommended escapement goal range
 UpperB<-140000 #upper bound of recommended escapement goal range
