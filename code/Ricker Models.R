@@ -11,7 +11,7 @@ library(gdata)
 
 #data----
 brood<-read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
-sr<-brood[,2:3] #retrieve spawner recruit data for one stock
+sr<-brood[,2:3] #retrieve spawner recruit data from rows 2-3 of the brood dataset.
 colnames(sr)<-c("S","R") #rename the column names
 sr<-na.omit(sr)  #remove missing rows with missing values(na)
 sr$lnRS<-log(sr$R/sr$S) #add one column called lnRS
@@ -25,9 +25,9 @@ mylm <- lm(lnRS ~ S, sr)
 pacf(residuals(mylm))
 
 
-##Ricker model for stock-recruitment analysis 
-#Created by Steve Fleischman 
-#Ricker WITHOUT autocorrelation
+##Ricker model for stock-recruitment analysis ##################################################
+#Created by Steve Fleischman  ##################################################################
+#First, Ricker WITHOUT autocorrelation #########################################################
 Ricker=function(){
   
   lnalpha ~ dunif(0, 10) 
@@ -38,7 +38,7 @@ Ricker=function(){
   
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
   
-  mean2.lnRS[1]     <- mean1.lnRS[1] + phi * resid.red.0  
+  mean2.lnRS[1]  <- mean1.lnRS[1] + phi * resid.red.0  
   for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }  #NO autocorrelation model
   
   for(y in 1:n) {  mean1.lnRS[y] <- lnalpha - beta * S[y]  }
@@ -51,18 +51,18 @@ Ricker=function(){
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
   #lnalpha.c <- lnalpha
-  alpha<-exp(lnalpha)  #exponentiate to solve for alpha
+  alpha <- exp(lnalpha)  #exponentiate to solve for alpha
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy...could use Scheuerell solution too....
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)  #Solves for recruits at Smsy
-  MSY<- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
+  MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
   
-  S.star[1]<-0
-  step<-400
+  S.star[1] <- 0
+  step <- 400
   for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY)
     S.star[i] <- S.star[i-1]+step
     R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
@@ -70,16 +70,19 @@ Ricker=function(){
     I90[i] <- step(SY[i] - 0.9 * MSY)  
   }
 }
-#write the model to a text file to be called by WinBUGS
+#write the non-AR model to a text file to be called by WinBUGS
 model_file_loc=paste("code/Chilkoot_Sockeye.txt", sep="")
 write.model(Ricker, paste("code/Chilkoot_Sockeye.txt", sep=""))
 
-#Ricker model WITH autocorrelation
+
+
+#############################################################################
+#Next, Ricker model WITH autocorrelation  ###################################
 AR=function(){
   
   lnalpha ~ dunif(0, 10)
   beta ~ dunif(0, 10) 
-  phi ~ dunif(-1,1)                #AR(1) model so phi does not = zero
+  phi ~ dunif(-1,1)                #AR(1) model so phi IS included and does not = zero
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
   
@@ -100,14 +103,14 @@ AR=function(){
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
   #lnalpha.c <- lnalpha
-  alpha<-exp(lnalpha) #exponentiate to solve for alpha 
+  alpha <- exp(lnalpha) #exponentiate to solve for alpha 
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c)
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)
   
-  MSY<-step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
+  MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy < S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
   S.star[1]<-0
@@ -120,7 +123,7 @@ AR=function(){
   }
 }
 
-#write the model to a text file to be called by WinBUGS
+#write the AR model to a text file to be called by WinBUGS or JAGS
 model_file_loc=paste("code/Chilkoot_Sockeye_AR.txt", sep="")
 write.model(AR, paste("code/Chilkoot_Sockeye_AR.txt", sep=""))
 
@@ -131,6 +134,7 @@ inits1<-list(lnalpha=1.5, beta=0.0005, sigma.white=0.7, resid.red.0= 0)
 inits2<-list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
 inits3<-list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
 inits<-list(inits1, inits2, inits3)
+
 #parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY", "I90")
 parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY")
 ptm = proc.time()
@@ -192,6 +196,7 @@ coda <- x[,1:3]
 coda<- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write.csv(coda, file= paste("results/Ricker_coda.csv") ,row.names=FALSE)    # writes csv file
 
+
 ###########################################################################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##########################################################################################################
@@ -201,10 +206,11 @@ inits1<-list(lnalpha=1.5, beta=0.0005, phi= 0.3, sigma.white=0.7, resid.red.0= 0
 inits2<-list(lnalpha=2.0, beta=0.0010, phi=-0.1, sigma.white=0.5, resid.red.0=-1)
 inits3<-list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1)
 inits<-list(inits1, inits2, inits3)
+
 #parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
-parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi")
+parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi")
 jmod <- jags.model(file='code/Chilkoot_Sockeye_AR.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
-x<-update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
+x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
 post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
 post.samp <- post
 
@@ -239,7 +245,7 @@ dev.off()
 
 #Gelman
 gel <- as.data.frame(gelman.diag(post, multivariate=F)[[1]])
-poor.threshold=1.10#values less than 1.2 are generally considered converged
+poor.threshold=1.10 #values less than 1.2 are generally considered converged
 poor <- gel[gel[,1] > poor.threshold, ]
 write.csv(poor, file= paste("results/Ricker_AR_Gelman.csv") )    
 
@@ -252,10 +258,10 @@ dic.pD <- dev1 + pD
 dic.pD.summary <- data.frame(dev1, pD, dic.pD)
 write.csv(dic.pD.summary, file=paste("results/Ricker_AR_DIC.csv") ) 
 
-#Create coda samples for horsetail plots and probability plots
+#Create coda samples for horsetail plots and probability plots for the AR model
 post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=10,n.burnin=10000) 
 x <- as.array(post2)
 x <- data.frame(x)
-coda <- x[,1:3]
+coda <- x[,1:3] 
 coda<- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write.csv(coda, file= paste("results/Ricker_AR_coda.csv") ,row.names=FALSE) # writes csv file
