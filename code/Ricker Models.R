@@ -47,7 +47,7 @@ Ricker=function(){
   
   tau.white <- 1 / sigma.white / sigma.white        
   tau.red <- tau.white * (1-phi*phi)
-  sigma.red <- 1 / sqrt(tau.red)
+  sigma.red <- 1 / sqrt(tau.red) 
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
   #lnalpha.c <- lnalpha
@@ -135,7 +135,7 @@ inits2<-list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
 inits3<-list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
 inits<-list(inits1, inits2, inits3)
 
-#parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY", "I90")
+#parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY", "I90") No phi????
 parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY")
 ptm = proc.time()
 jmod <- jags.model(file='code/Chilkoot_Sockeye.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 

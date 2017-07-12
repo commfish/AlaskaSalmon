@@ -29,7 +29,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 **Import the data**
 
 ```{r import data}
-Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+Chilkoot <- read_csv('data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
 
@@ -179,37 +179,6 @@ acf(x=Chilkoot$Spawn)
 
 pacf(x=Chilkoot$Spawn)
 ```
-
-
-**Bayesian analysis--code from Steve Fleischman and Xinxian Zhang**
-```{r Bayesian approach}
-library("arm")
-library("R2WinBUGS")
-brood<-read.table("Chilkoot_Sock.csv", header=TRUE, sep=",")
-sr<-brood[,2:3] #retrieve spawner recruit data for one stock
-colnames(sr)<-c("S","R") #rename the column names
-sr<-na.omit(sr)  #remove missing rows with missing values(na)
-sr$lnRS<-log(sr$R/sr$S) #add one column,lnRS
-n<-nrow(sr)
-sr.data<-list(n=n,S=sr$S, lnRS=sr$lnRS)
-
-#check AR(1)
-library(lmtest)
-dwtest(sr$lnRS ~ sr$S)
-mylm <- lm(lnRS ~ S, sr)
-pacf(residuals(mylm))
-
-
-
-```
-
-
-
-# Discussion
-
-Given the existence of autocorrelation between years, our results lend support for using an autoregressive Ricker model.
-We recommend putting off consideration of a change to this goal until returns from large escapements during the past several years have been realized. Such returns will add much needed contrast to the spawner-recruitment model.
-
 
 
 
