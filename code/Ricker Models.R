@@ -265,3 +265,4 @@ x <- data.frame(x)
 coda <- x[,1:3] 
 coda<- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write.csv(coda, file= paste("results/Ricker_AR_coda.csv") ,row.names=FALSE) # writes csv file
+

@@ -181,7 +181,6 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   
   
-  
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
     geom_ribbon(aes(ymin = q10, ymax = q90), alpha=.15)+ xlab('Escapement (S)')+
