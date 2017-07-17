@@ -160,7 +160,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   
   Y %>% 
-    dplyr::select(Escapement, OY0.9 = oy_0.9, OY0.8 = of_0.8, OR0.9 = or_0.9, 
+    dplyr::select(Escapement, OY0.9 = oy_0.9, OY0.8 = oy_0.8, OR0.9 = or_0.9, 
                   OR0.8 = or_0.8, OF0.9 = of_0.9, OF0.8 = of_0.8) %>% 
     melt(., id.vars = 'Escapement')  %>% 
     mutate(sra = ifelse(grepl("OY0",variable), "Yield Profile",
@@ -173,7 +173,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
-    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.50),
+    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.5),
           legend.background = element_rect(fill=alpha('white', 0.0)))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
   
@@ -188,7 +188,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
   
-  ggsave("figures/expected_sustained_yield.png", dpi=200, width=8, height=5, units='in')
+  ggsave("figures/expected_sustained_yield_AR.png", dpi=200, width=8, height=5, units='in')
 }
 
 #Run function

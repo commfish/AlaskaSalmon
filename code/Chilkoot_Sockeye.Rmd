@@ -29,7 +29,7 @@ Once the lake stabilizes, if it ever does, it would be useful to see some recrui
 **Import the data**
 
 ```{r import data}
-Chilkoot <- read_csv('data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
+Chilkoot <- read_csv('../data/Chilkoot_Sock.csv') #Use: '../data/ ' to grab 
   #data with knitr, OR just data/ to run from R
 glimpse(Chilkoot)
 
@@ -90,7 +90,7 @@ ggplot(Chilkoot, aes(x=BroodYr, y=logRS))+
   geom_smooth(method="gam", formula=y~s(x, k=10), 
               method.args=list(family="gaussian", se=TRUE))
 
-# ggsave("ChilkootSR.pdf", dpi = 300)
+ggsave("figures/ChilkootSR_Years.png", dpi = 300)  #save in the Figures folder to use in the report.
 ```
 
 
