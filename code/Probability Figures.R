@@ -7,8 +7,8 @@
 
 
 rm(list=ls(all=T))#Remove previous variables.
-LowerB<-65000 #lower bound of recommended escapement goal range
-UpperB<-140000 #upper bound of recommended escapement goal range
+LowerB<-38000 #lower bound of recommended escapement goal range
+UpperB<-86000 #upper bound of recommended escapement goal range
 
 #load----
 #Load Packages

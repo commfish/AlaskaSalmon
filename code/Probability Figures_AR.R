@@ -173,11 +173,11 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
-    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.35),
+    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.50),
           legend.background = element_rect(fill=alpha('white', 0.0)))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
   
-  ggsave("figures/0.8_0.9.png", dpi=200, width=7, height=6, units='in')						  
+  ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')						  
   
   
   
