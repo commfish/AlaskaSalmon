@@ -117,8 +117,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   
   
-  write.csv(qm,("data/processed/QM.csv"), row.names=FALSE)
-  write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
+  write.csv(qm,("data/processed/QM_AR.csv"), row.names=FALSE)
+  write.csv(Y,("data/processed/Y_AR.csv"), row.names=FALSE)
   
   
   #create probability profile plots for 0.7, 0.8, and 0.9 probabilities of achieving 90% of MSY
