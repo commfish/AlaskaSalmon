@@ -49,6 +49,10 @@ coda %>% mutate(S.eq.c = lnalpha.c/beta,
 attach(coda)
 #analysis----
 #create function for probability profiles and figures
+i=10
+z=500
+xa.start=0
+xa.end=700
 profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
 xa = seq(xa.start, xa.end, by=i) 
 x =(xa+i)*z
@@ -109,15 +113,15 @@ qm <- data.frame(measure = names(mq), value = as.numeric(mq[1,]), Escapement=rep
 qm <- spread(qm, measure, value)
 qm <- qm[c("q95", "q90", "Median","q10", "q5", "Escapement")]
 Y <- Y[c("oy_0.9", "oy_0.8", "or_0.9","or_0.8", "of_0.9", "of_0.8", "oy_0.7","or_0.7","of_0.7","Escapement")]
-write.csv(qm,("data/processed/QM_AR.csv"), row.names=FALSE)
-write.csv(Y,("data/processed/Y_AR.csv"), row.names=FALSE)
+write.csv(qm,("data/processed/QM_AR_SEM.csv"), row.names=FALSE)
+write.csv(Y,("data/processed/Y_AR_SEM.csv"), row.names=FALSE)
 
 #create probability profile plots (0.7)
 windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+ 
             theme(panel.grid.major = element_blank(),
                   panel.grid.minor = element_blank()))
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["Optimal_Yield0.7"] <-Y$oy_0.7 
 Y["Overfishing0.7"] <-Y$of_0.7 
 Y["Optimal_Recruitment0.7"] <-Y$or_0.7 
@@ -127,7 +131,7 @@ ggplot(mY, aes(Escapement/1000, value, lty=variable))+geom_line()+xlab('Escapeme
   theme(legend.justification=c(1,0), legend.position=c(1,.5), legend.key = element_blank(),legend.title=element_blank())
 #ggsave("figures/0.7.png", dpi=200, dev='png', width=8, height=5, units='in')
 
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["Optimal_Yield0.8"] <-Y$oy_0.8 
 Y["Overfishing0.8"] <-Y$of_0.8 
 Y["Optimal_Recruitment0.8"] <-Y$or_0.8 
@@ -137,7 +141,7 @@ ggplot(mY, aes(Escapement/1000, value, lty=variable))+geom_line()+xlab('Escapeme
   theme(legend.justification=c(1,0), legend.position=c(1,.5), legend.key = element_blank(),legend.title=element_blank())
 #ggsave("figures/0.8_AR.png", dpi=200, dev='png', width=8, height=5, units='in')
 
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["Optimal_Yield0.9"] <-Y$oy_0.9 
 Y["Overfishing0.9"] <-Y$of_0.9 
 Y["Optimal_Recruitment0.9"] <-Y$or_0.9 
@@ -147,7 +151,7 @@ ggplot(mY, aes(Escapement/1000, value, lty=variable))+geom_line()+xlab('Escapeme
   theme(legend.justification=c(1,0), legend.position=c(1,.5), legend.key = element_blank(),legend.title=element_blank())
 ggsave("figures/0.9_AR.png", dpi=200, dev='png', width=8, height=5, units='in')
 
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["OY0.9"] <-Y$oy_0.9 
 Y["OY0.8"] <-Y$oy_0.8 
 Y<-subset(Y, select=c(Escapement, OY0.9,OY0.8))
@@ -156,7 +160,7 @@ mY1["sra"] <-"Optimal Yield Profile"
 mY1["max_pct"] <- ifelse(grepl("OY0.8",mY1$variable), 
                        0.8,0.9)
 
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["OF0.9"] <-Y$of_0.9 
 Y["OF0.8"] <-Y$of_0.8 
 Y<-subset(Y, select=c(Escapement, OF0.9,OF0.8))
@@ -165,7 +169,7 @@ mY2["sra"] <-"Overfishing Profile"
 mY2["max_pct"] <- ifelse(grepl("OF0.8",mY2$variable), 
                          0.8,0.9)
 
-Y <- read.csv("data/processed/Y_AR.csv")
+Y <- read.csv("data/processed/Y_AR_SEM.csv")
 Y["OR0.9"] <-Y$or_0.9 
 Y["OR0.8"] <-Y$or_0.8 
 Y<-subset(Y, select=c(Escapement, OR0.9,OR0.8))
@@ -193,8 +197,12 @@ ggsave("figures/0.8_0.9_AR.png", dpi=200, dev='png', width=7, height=6, units='i
 theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
 options(scipen=99999)
 
+<<<<<<< HEAD
 
 QM <- read.csv("data/processed/QM_AR.csv")
+=======
+QM <- read.csv("data/processed/QM_AR_SEM.csv")
+>>>>>>> add0677ee7860c4d236bc3719089824177f6e92c
 mQM <- melt(QM, id.vars='Escapement')
 windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
