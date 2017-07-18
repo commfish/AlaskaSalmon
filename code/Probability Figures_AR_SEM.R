@@ -65,6 +65,7 @@ dat7 <- data.frame(S0=rep(0, length(coda[,1])))
 dat8 <- data.frame(S0=rep(0, length(coda[,1])))
 dat9 <- data.frame(S0=rep(0, length(coda[,1])))
 
+
 for (i in 1:length(xa)){
   dat[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))
   dat1[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 1,0)
@@ -188,10 +189,10 @@ scale_linetype_discrete(name = "Percent of Max.")+
 facet_grid(sra ~ .) +
 theme_bw()+ theme(legend.key = element_blank())+scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))+
 theme(text=element_text(family="Times New Roman"))
-
 ggsave("figures/0.8_0.9_AR.png", dpi=200, dev='png', width=7, height=6, units='in')
 theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
 options(scipen=99999)
+
 
 QM <- read.csv("data/processed/QM_AR.csv")
 mQM <- melt(QM, id.vars='Escapement')
@@ -207,6 +208,7 @@ ggplot(QM, aes(Escapement, Median))+geom_line(size=1)+
 
 ggsave("figures/Expected Sustained Yield AR (QM).png", dpi=200, dev='png', width=8, height=5, units='in')
 }
+
 #Run function
-profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
+profile(i=10, z=500, xa.start=0, xa.end=700,lnalpha.c, beta) #can change i,z, xa.start, xa.end
 

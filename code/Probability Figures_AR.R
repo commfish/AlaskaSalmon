@@ -45,13 +45,13 @@ coda %>%
 
 f.profile <- function(i,z,xa.start, xa.end, data){ 
   xa = seq(xa.start, xa.end, by=i) 
-  x =(xa + i) * z
+  x =(xa + i) * z  #adjusts the increment of the x-axis (escapement)
   
   # create empty dataframes
   dat <- data.frame(S0 = rep(1, nrow(data)))
   dat1 <- data.frame(S0 = rep(0, nrow(data)))
   
-  dat3 <- dat6 <- dat
+  dat3 <- dat6 <- dat  #3 probability profiles 0.7, 0.8, and 0.9
   dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat1
   
   for (i in 1:length(xa)){
@@ -94,7 +94,6 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   #Bind dataframes together
   Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
-  
   names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
                 'or_0.9','Escapement')
   
@@ -173,10 +172,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
-    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.5),
-          legend.background = element_rect(fill=alpha('white', 0.0)))+
+    theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
-  
   ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')						  
   
   
