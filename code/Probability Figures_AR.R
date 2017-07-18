@@ -48,11 +48,11 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   x =(xa + i) * z
   
   # create empty dataframes
-  dat <- data.frame(S0 = rep(0, nrow(data)))
-  dat1 <- data.frame(S0 = rep(1, nrow(data)))
+  dat <- data.frame(S0 = rep(1, nrow(data)))
+  dat1 <- data.frame(S0 = rep(0, nrow(data)))
   
-  dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat
-  dat3 <- dat6 <- dat1
+  dat3 <- dat6 <- dat
+  dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat1
   
   for (i in 1:length(xa)){
     dat [,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))

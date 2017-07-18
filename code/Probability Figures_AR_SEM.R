@@ -45,12 +45,14 @@ coda %>% mutate(S.eq.c = lnalpha.c/beta,
 					      MSY.c = R.msy.c-S.msy.c, 
 					      Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
 
+
 attach(coda)
 #analysis----
 #create function for probability profiles and figures
 profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
 xa = seq(xa.start, xa.end, by=i) 
 x =(xa+i)*z
+
 # empty dataframes
 dat <- data.frame(S0=rep(1, length(coda[,1])))
 dat1 <- data.frame(S0=rep(0, length(coda[,1])))
@@ -62,6 +64,7 @@ dat6 <- data.frame(S0=rep(1, length(coda[,1])))
 dat7 <- data.frame(S0=rep(0, length(coda[,1])))
 dat8 <- data.frame(S0=rep(0, length(coda[,1])))
 dat9 <- data.frame(S0=rep(0, length(coda[,1])))
+
 for (i in 1:length(xa)){
   dat[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))
   dat1[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 1,0)
@@ -73,23 +76,28 @@ for (i in 1:length(xa)){
   dat7[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.9*coda$MSY.c), 1,0)
   dat8[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.9*coda$Rmax), 1,0)
   dat9[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])-x[i]
-  }
+}
+
 # Overfishing estimate ----
 dat %>% filter(complete.cases(.) )%>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> of_0.7 
 dat3 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.8  
-dat6 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.9  
+dat6 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.9 
+
 # Optimal yield estimate ----
 dat1 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.7 
 dat4 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.8 
-dat7 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.9 
+dat7 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.9
+
 # Optimal recruitment ----
 dat2 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.7 
 dat5 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.8 
 dat8 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.9 
+
 #Bind dataframes together
 Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
 names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
               'or_0.9','Escapement')
+
 #Quantiles and Medians ----
 summarise_all(dat9, funs(median, q95=quantile(., 0.95, na.rm=T), q90=quantile(., 0.90, na.rm=T),
                           q10=quantile(., 0.10, na.rm=T),q5=quantile(., 0.05, na.rm=T))) -> mq

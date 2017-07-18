@@ -74,24 +74,24 @@ for (i in 1:length(xa)){
 }
 
 # Overfishing estimate ----
-dat %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> of_0.7 
-dat3 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> of_0.8  
-dat6 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> of_0.9  
+dat %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.7 
+dat3 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.8  
+dat6 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> of_0.9  
 # Optimal yield estimate ----
-dat1 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> oy_0.7 
-dat4 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> oy_0.8 
-dat7 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value)-> oy_0.9 
+dat1 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.7 
+dat4 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.8 
+dat7 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value)-> oy_0.9 
 # Optimal recruitment ----
-dat2 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.7 
-dat5 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.8 
-dat8 %>% filter(complete.cases(.)) %>% summarise_each(funs(mean)) %>% gather() %>% select(value) -> or_0.9 
+dat2 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.7 
+dat5 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.8 
+dat8 %>% filter(complete.cases(.)) %>% summarise_all(funs(mean)) %>% gather() %>% select(value) -> or_0.9 
 
 #Bind dataframes together
 Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
 names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
               'or_0.9','Escapement')
 #Quantiles and Medians ----
-summarise_each(dat9, funs(median, q95=quantile(., 0.95, na.rm=T), q90=quantile(., 0.90, na.rm=T),
+summarise_all(dat9, funs(median, q95=quantile(., 0.95, na.rm=T), q90=quantile(., 0.90, na.rm=T),
                           q10=quantile(., 0.10, na.rm=T),q5=quantile(., 0.05, na.rm=T))) -> mq
 
 names(mq) <- c(rep(('Median'),length(x)+1), rep(('q95'),length(x)+1), rep(('q90'),length(x)+1), rep(('q10'),length(x)+1), rep(('q5'),length(x)+1))
