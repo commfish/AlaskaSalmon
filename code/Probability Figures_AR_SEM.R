@@ -48,6 +48,10 @@ coda %>% mutate(S.eq.c = lnalpha.c/beta,
 attach(coda)
 #analysis----
 #create function for probability profiles and figures
+i=10
+z=500
+xa.start=0
+xa.end=700
 profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
 xa = seq(xa.start, xa.end, by=i) 
 x =(xa+i)*z
