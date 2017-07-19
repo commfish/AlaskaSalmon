@@ -46,13 +46,13 @@ coda %>%
 
 f.profile <- function(i,z,xa.start, xa.end, data){ 
   xa = seq(xa.start, xa.end, by=i) 
-  x =(xa + i) * z  #adjusts the increment of the x-axis (escapement)
+  x =(xa + i) * z
   
   # create empty dataframes
   dat <- data.frame(S0 = rep(1, nrow(data)))
   dat1 <- data.frame(S0 = rep(0, nrow(data)))
   
-  dat3 <- dat6 <- dat  #3 probability profiles 0.7, 0.8, and 0.9
+  dat3 <- dat6 <- dat
   dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat1
   
   for (i in 1:length(xa)){
@@ -110,6 +110,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   #Bind dataframes together
   Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
+  
   names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
                 'or_0.9','Escapement')
   
@@ -130,8 +131,15 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   qm <- spread(qm, measure, value)
   qm <- qm[c("q95", "q90", "Median","q10", "q5", "Escapement")]
   
+<<<<<<< HEAD
   write.csv(qm,("data/processed/QM.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
+=======
+  
+  
+  write.csv(qm,("data/processed/QM_AR.csv"), row.names=FALSE)
+  write.csv(Y,("data/processed/Y_AR.csv"), row.names=FALSE)
+>>>>>>> e8395741e80db86c1fbffd01d2ffdbcb53c3b473
   
   #create probability profile plots for 0.7, 0.8, and 0.9 probabilities of achieving 90% of MSY
   Y %>% 
@@ -139,8 +147,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
                   Overfishing0.7 = of_0.7, Optimal_Recruitment0.7 = or_0.7) %>% 
     melt(., id.vars = 'Escapement') %>% 
     ggplot( aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+
-    ylab('Probability')+
+    xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
   
@@ -151,12 +158,11 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     dplyr::select(Escapement, Optimal_Yield0.8 = oy_0.8, 
                   Overfishing0.8 = of_0.8, Optimal_Recruitment0.8 = or_0.8) %>% 
     melt(., id.vars = 'Escapement') %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+
-    geom_line()+
-    xlab('Escapement (1,000)')+
-    ylab('Probability')+
+    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
+    xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
+  
   ggsave("figures/0.8.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -164,12 +170,11 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     dplyr::select(Escapement, Optimal_Yield0.9 = oy_0.9, 
                   Overfishing0.9 = of_0.9, Optimal_Recruitment0.9 = or_0.9) %>% 
     melt(., id.vars = 'Escapement')  %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+
-    geom_line()+
-    xlab('Escapement (1,000)')+
-    ylab('Probability')+
+    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
+    xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
+  
   ggsave("figures/0.9.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -183,13 +188,13 @@ f.profile <- function(i,z,xa.start, xa.end, data){
            max_pct = ifelse(grepl('0.8', variable), 0.8,0.9)) %>% 
     ggplot(aes(Escapement, value, linetype = factor(max_pct)))+ 
     geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
-              inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+
-    geom_line()+
+              inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+
     xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 25000), limits = c(0, 150000))+
+    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
-    theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))+
+    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.5),
+          legend.background = element_rect(fill=alpha('white', 0.0)))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
   
   ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')	
@@ -197,16 +202,24 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
     geom_ribbon(aes(ymin = q10, ymax = q90), alpha=.15)+ xlab('Escapement (S)')+
-    ylab('Expected Yield')+
-    scale_y_continuous(labels = comma)+
-    scale_x_continuous(labels = comma,breaks = seq(0, 350000, 25000), limits = c(0,150000))+
+    ylab('Expected Yield')+scale_y_continuous(labels = comma)+
+    scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
+  
   ggsave("figures/expected_sustained_yield_AR.png", dpi=200, width=8, height=5, units='in')
 }
 
 #Run function
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+f.profile(i=10,z=500,xa.start=0, xa.end=700, coda)#can change i,z, xa.start, xa.end
+=======
+
+>>>>>>> e8395741e80db86c1fbffd01d2ffdbcb53c3b473
 f.profile(10,100,0,3500, coda) #can change i,z, xa.start, xa.end to increment more/less
                                                     #or end at a larger or smaller value
+>>>>>>> bfb796d78f14e7751e95d86049cd131a9f3f10da
 
 # #Run function
 # profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
