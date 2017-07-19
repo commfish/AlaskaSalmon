@@ -58,16 +58,31 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   for (i in 1:length(xa)){
     dat [,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
                           (0.7*data$MSY.c), 0, if_else(dat[,i]==0, 0,1))
+    
     dat1[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
                           (0.7*data$MSY.c), 1,0)
+    
     dat2[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>
                           (0.7*data$Rmax), 1,0)
-    dat3[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.8*data$MSY.c), 0, if_else(dat3[,i]==0, 0,1))
-    dat4[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.8*data$MSY.c), 1,0)
-    dat5[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>(0.8*data$Rmax), 1,0)
-    dat6[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.9*data$MSY.c), 0, if_else(dat6[,i]==0, 0,1))
-    dat7[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.9*data$MSY.c), 1,0)
-    dat8[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>(0.9*data$Rmax), 1,0)
+    
+    dat3[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                           (0.8*data$MSY.c), 0, if_else(dat3[,i]==0, 0,1))
+    
+    dat4[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                           (0.8*data$MSY.c), 1,0)
+    
+    dat5[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>
+                           (0.8*data$Rmax), 1,0)
+    
+    dat6[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                           (0.9*data$MSY.c), 0, if_else(dat6[,i]==0, 0,1))
+    
+    dat7[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                           (0.9*data$MSY.c), 1,0)
+    
+    dat8[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>
+                           (0.9*data$Rmax), 1,0)
+    
     dat9[,i+1] = x[i]*exp(data$lnalpha.c-data$beta*x[i])-x[i]
   }
   
@@ -83,18 +98,15 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   of_0.8 <- f.over(dat3)
   of_0.9 <- f.over(dat6)
   
-  
   # Optimal yield estimate ----
   oy_0.7 <- f.over(dat1)
   oy_0.8 <- f.over(dat4)
   oy_0.9 <- f.over(dat7)
   
-  
   # Optimal recruitment ----
   or_0.7 <- f.over(dat2)
   or_0.8 <- f.over(dat5)
   or_0.9 <- f.over(dat8)
-  
   
   #Bind dataframes together
   Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
@@ -118,11 +130,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   qm <- spread(qm, measure, value)
   qm <- qm[c("q95", "q90", "Median","q10", "q5", "Escapement")]
   
-  
-  
   write.csv(qm,("data/processed/QM.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
-  
   
   #create probability profile plots for 0.7, 0.8, and 0.9 probabilities of achieving 90% of MSY
   Y %>% 
@@ -183,9 +192,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
   
-  ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')						  
-  
-  
+  ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')	
   
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
@@ -198,7 +205,6 @@ f.profile <- function(i,z,xa.start, xa.end, data){
 }
 
 #Run function
-
 f.profile(10,100,0,3500, coda) #can change i,z, xa.start, xa.end to increment more/less
                                                     #or end at a larger or smaller value
 
