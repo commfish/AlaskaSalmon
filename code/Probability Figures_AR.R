@@ -20,6 +20,7 @@ theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
                   panel.grid.minor = element_blank()))
 
 library(reshape2)
+library(scales)
 
 #data----
 #loadfonts(device="win") #only need to do this once; takes awhile to run!
@@ -40,7 +41,7 @@ coda %>%
 
 # analysis----
 # create function for probability profiles and figures
-# i=10; z=500; xa.start=0 ; xa.end=700 starting input values
+# i=10; z=100; xa.start=0 ; xa.end=3500 #starting input values
 
 
 f.profile <- function(i,z,xa.start, xa.end, data){ 
@@ -55,24 +56,27 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat1
   
   for (i in 1:length(xa)){
-    dat [,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))
-    dat1[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 1,0)
-    dat2[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.7*coda$Rmax), 1,0)
-    dat3[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.8*coda$MSY.c), 0, ifelse(dat3[,i]==0, 0,1))
-    dat4[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.8*coda$MSY.c), 1,0)
-    dat5[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.8*coda$Rmax), 1,0)
-    dat6[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.9*coda$MSY.c), 0, ifelse(dat6[,i]==0, 0,1))
-    dat7[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.9*coda$MSY.c), 1,0)
-    dat8[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.9*coda$Rmax), 1,0)
-    dat9[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])-x[i]
+    dat [,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                          (0.7*data$MSY.c), 0, if_else(dat[,i]==0, 0,1))
+    dat1[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
+                          (0.7*data$MSY.c), 1,0)
+    dat2[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>
+                          (0.7*data$Rmax), 1,0)
+    dat3[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.8*data$MSY.c), 0, if_else(dat3[,i]==0, 0,1))
+    dat4[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.8*data$MSY.c), 1,0)
+    dat5[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>(0.8*data$Rmax), 1,0)
+    dat6[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.9*data$MSY.c), 0, if_else(dat6[,i]==0, 0,1))
+    dat7[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>(0.9*data$MSY.c), 1,0)
+    dat8[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i]))>(0.9*data$Rmax), 1,0)
+    dat9[,i+1] = x[i]*exp(data$lnalpha.c-data$beta*x[i])-x[i]
   }
+  
   # Overfishing estimate ----
   f.over <- function(x){
     x %>% 
-      filter(complete.cases(.)) %>% 
       summarise_all(funs(mean)) %>% 
       gather() %>% 
-      select(value)
+      dplyr::select(value)
   }
   
   of_0.7 <- f.over(dat)
@@ -178,6 +182,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     facet_grid(sra ~ .) + 
     theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
+  
   ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')						  
   
   
@@ -193,7 +198,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
 }
 
 #Run function
-f.profile(i=10,z=100,xa.start=0, xa.end=3500, coda) #can change i,z, xa.start, xa.end to increment more/less
+
+f.profile(10,100,0,3500, coda) #can change i,z, xa.start, xa.end to increment more/less
                                                     #or end at a larger or smaller value
 
 # #Run function
