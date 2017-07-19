@@ -57,7 +57,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   
   for (i in 1:length(xa)){
     dat [,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
-                          (0.7*data$MSY.c), 0, if_else(dat[,i]==0, 0,1))
+                           (0.7*data$MSY.c), 0, if_else(dat[,i]==0, 0,1))
     
     dat1[,i+1] = if_else((x[i] * exp(data$lnalpha.c-data$beta*x[i])-x[i])>
                           (0.7*data$MSY.c), 1,0)
@@ -131,15 +131,12 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   qm <- spread(qm, measure, value)
   qm <- qm[c("q95", "q90", "Median","q10", "q5", "Escapement")]
   
-<<<<<<< HEAD
   write.csv(qm,("data/processed/QM.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
-=======
-  
+
   
   write.csv(qm,("data/processed/QM_AR.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y_AR.csv"), row.names=FALSE)
->>>>>>> e8395741e80db86c1fbffd01d2ffdbcb53c3b473
   
   #create probability profile plots for 0.7, 0.8, and 0.9 probabilities of achieving 90% of MSY
   Y %>% 
@@ -150,7 +147,6 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.7.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -162,7 +158,6 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.8.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -174,9 +169,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.9.AR.png", dpi=200, width=8, height=5, units='in')
-  
   
   
   Y %>% 
@@ -190,14 +183,14 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
               inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+
     xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
+    scale_x_continuous(labels = comma, breaks = seq(0, 200000, 25000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
     theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.5),
           legend.background = element_rect(fill=alpha('white', 0.0)))+
     scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
-  
   ggsave("figures/0.8_0.9AR.png", dpi=200, width=7, height=6, units='in')	
+  
   
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
@@ -205,21 +198,12 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     ylab('Expected Yield')+scale_y_continuous(labels = comma)+
     scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
-  
   ggsave("figures/expected_sustained_yield_AR.png", dpi=200, width=8, height=5, units='in')
 }
 
 #Run function
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-f.profile(i=10,z=500,xa.start=0, xa.end=700, coda)#can change i,z, xa.start, xa.end
-=======
-
->>>>>>> e8395741e80db86c1fbffd01d2ffdbcb53c3b473
-f.profile(10,100,0,3500, coda) #can change i,z, xa.start, xa.end to increment more/less
+f.profile(i=10,z=100,xa.start=0,xa.end=3500, coda) #can change i,z, xa.start, xa.end to increment more/less
                                                     #or end at a larger or smaller value
->>>>>>> bfb796d78f14e7751e95d86049cd131a9f3f10da
 
 # #Run function
 # profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
