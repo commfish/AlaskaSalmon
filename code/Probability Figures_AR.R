@@ -126,7 +126,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
                   Overfishing0.7 = of_0.7, Optimal_Recruitment0.7 = or_0.7) %>% 
     melt(., id.vars = 'Escapement') %>% 
     ggplot( aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
+    xlab('Escapement (1,000)')+
+    ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
   
@@ -137,11 +138,12 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     dplyr::select(Escapement, Optimal_Yield0.8 = oy_0.8, 
                   Overfishing0.8 = of_0.8, Optimal_Recruitment0.8 = or_0.8) %>% 
     melt(., id.vars = 'Escapement') %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
+    ggplot(aes(Escapement/1000, value, lty=variable))+
+    geom_line()+
+    xlab('Escapement (1,000)')+
+    ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.8.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -149,11 +151,12 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     dplyr::select(Escapement, Optimal_Yield0.9 = oy_0.9, 
                   Overfishing0.9 = of_0.9, Optimal_Recruitment0.9 = or_0.9) %>% 
     melt(., id.vars = 'Escapement')  %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
+    ggplot(aes(Escapement/1000, value, lty=variable))+
+    geom_line()+
+    xlab('Escapement (1,000)')+
+    ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.9.AR.png", dpi=200, width=8, height=5, units='in')
   
   
@@ -167,9 +170,10 @@ f.profile <- function(i,z,xa.start, xa.end, data){
            max_pct = ifelse(grepl('0.8', variable), 0.8,0.9)) %>% 
     ggplot(aes(Escapement, value, linetype = factor(max_pct)))+ 
     geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
-              inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+
+              inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+
+    geom_line()+
     xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 50000))+
+    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 25000), limits = c(0, 150000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
     theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))+
@@ -181,8 +185,9 @@ f.profile <- function(i,z,xa.start, xa.end, data){
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
     geom_ribbon(aes(ymin = q10, ymax = q90), alpha=.15)+ xlab('Escapement (S)')+
-    ylab('Expected Yield')+scale_y_continuous(labels = comma)+
-    scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
+    ylab('Expected Yield')+
+    scale_y_continuous(labels = comma)+
+    scale_x_continuous(labels = comma,breaks = seq(0, 350000, 25000), limits = c(0,150000))+
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
   ggsave("figures/expected_sustained_yield_AR.png", dpi=200, width=8, height=5, units='in')
 }
