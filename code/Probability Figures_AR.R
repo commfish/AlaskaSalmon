@@ -183,7 +183,7 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
               inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+
     xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 200000, 25000))+
+    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 50000))+
     scale_linetype_discrete(name = "Percent of Max.")+
     facet_grid(sra ~ .) + 
     theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.5),
@@ -200,6 +200,8 @@ f.profile <- function(i,z,xa.start, xa.end, data){
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
   ggsave("figures/expected_sustained_yield_AR.png", dpi=200, width=8, height=5, units='in')
 }
+
+
 
 #Run function
 f.profile(i=10,z=100,xa.start=0,xa.end=3500, coda) #can change i,z, xa.start, xa.end to increment more/less
