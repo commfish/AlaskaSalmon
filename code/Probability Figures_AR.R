@@ -207,7 +207,5 @@ f.profile <- function(i,z,xa.start, xa.end, data){
 f.profile(i=10,z=100,xa.start=0,xa.end=3500, coda) #can change i,z, xa.start, xa.end to increment more/less
                                                     #or end at a larger or smaller value
 
-# #Run function
-# profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
 
 
