@@ -15,8 +15,9 @@ sr<-brood[,2:3] #retrieve spawner recruit data from rows 2-3 of the brood datase
 colnames(sr)<-c("S","R") #rename the column names
 sr<-na.omit(sr)  #remove missing rows with missing values(na)
 sr$lnRS<-log(sr$R/sr$S) #add one column called lnRS
-n<-nrow(sr)
+n<-nrow(sr) #calculates the number of years of data.
 sr.data<-list(n=n,S=sr$S, lnRS=sr$lnRS)
+
 
 #analysis----
 #check AR(1)
@@ -32,7 +33,7 @@ Ricker=function(){
   
   lnalpha ~ dunif(0, 10) 
   beta ~ dunif(0, 10)                 
-  phi <- 0                #get rid of AR(1) since this model does not account for autocorrelation
+  phi <- 0                #this model does not account for autocorrelation so phi is not used (thus, phi =0)
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
   
@@ -42,7 +43,7 @@ Ricker=function(){
   for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }  #NO autocorrelation model
   
   for(y in 1:n) {  mean1.lnRS[y] <- lnalpha - beta * S[y]  }
-  for(y in 1:n) {  resid.red[y]     <- lnRS[y] - mean1.lnRS[y]  }
+  for(y in 1:n) {  resid.red[y]  <- lnRS[y] - mean1.lnRS[y]  }
   for(y in 1:n) {  resid.white[y] <- lnRS[y] - mean2.lnRS[y]  }
   
   tau.white <- 1 / sigma.white / sigma.white        
@@ -73,7 +74,6 @@ Ricker=function(){
 #write the non-AR model to a text file to be called by WinBUGS
 model_file_loc=paste("code/Chilkoot_Sockeye.txt", sep="")
 write.model(Ricker, paste("code/Chilkoot_Sockeye.txt", sep=""))
-
 
 
 #############################################################################
