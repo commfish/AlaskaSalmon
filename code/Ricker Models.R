@@ -127,9 +127,12 @@ AR=function(){
 model_file_loc=paste("code/Chilkoot_Sockeye_AR.txt", sep="")
 write.model(AR, paste("code/Chilkoot_Sockeye_AR.txt", sep=""))
 
-#results----
+
+
+#######################################################################################
+#results
 #100000 iterations, 3 chains, 10000 burn-in period, thin by 100
-#Run Ricker without AR(1)
+#Run the Ricker model that does NOT have autocorrelation
 inits1<-list(lnalpha=1.5, beta=0.0005, sigma.white=0.7, resid.red.0= 0)
 inits2<-list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
 inits3<-list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
@@ -208,7 +211,7 @@ inits3<-list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1
 inits<-list(inits1, inits2, inits3)
 
 #parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
-parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi")
+parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi", "R.msy")
 jmod <- jags.model(file='code/Chilkoot_Sockeye_AR.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
 x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
 post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
@@ -219,7 +222,7 @@ summary<-summary(post)
 stats<-summary$statistics;  colnames(stats)
 quants<-summary$quantiles;  colnames(quants)
 statsquants <- cbind(stats,quants) 
-statsquants <- statsquants[,c(1,2,4,5,7,9)] #select columns of interest
+statsquants <- statsquants[,c(1,2,4,5,7,9)] #select statquant columns of interest: Mean, SD, Time-series SE,...
 write.csv(statsquants, file= paste("results/Ricker_AR.csv") ) 
 
 #Density and time series plots

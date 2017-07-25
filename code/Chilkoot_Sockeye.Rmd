@@ -126,8 +126,6 @@ Smsy
 Hilmsy <- (a*(0.5-0.07*a))/b  ###Hilborn Approximation of Smsy
 Hilmsy
 
-# #Bootstrapping CIs.....need to do another way. Realy need to calculate CIs for Smsy and then for the resulting Rmsy
-# Smsy_Boot <- bootCase(Hilmsy, B=1000)
 ```
 
 
