@@ -8,6 +8,7 @@ library(lmtest)
 library(rjags)
 library(R2OpenBUGS)
 library(gdata)
+library(tidyverse)
 
 #data----
 brood<-read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
@@ -130,6 +131,7 @@ write.model(AR, paste("code/Chilkoot_Sockeye_AR.txt", sep=""))
 
 
 #######################################################################################
+#######################################################################################
 #results
 #100000 iterations, 3 chains, 10000 burn-in period, thin by 100
 #Run the Ricker model that does NOT have autocorrelation
@@ -203,7 +205,7 @@ write.csv(coda, file= paste("results/Ricker_coda.csv") ,row.names=FALSE)    # wr
 ###########################################################################################################
 #++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ##########################################################################################################
-#Run Ricker with AR(1):  
+#Run Ricker WITH AR(1):  
 #100000 iterations, 3 chains, 10000 burn-in period, thin by 100
 inits1<-list(lnalpha=1.5, beta=0.0005, phi= 0.3, sigma.white=0.7, resid.red.0= 0)
 inits2<-list(lnalpha=2.0, beta=0.0010, phi=-0.1, sigma.white=0.5, resid.red.0=-1)
@@ -211,18 +213,26 @@ inits3<-list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1
 inits<-list(inits1, inits2, inits3)
 
 #parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
-parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi", "R.msy")
+parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi", "S.max", "S.eq", "S.msy", "U.msy", "R.msy")
 jmod <- jags.model(file='code/Chilkoot_Sockeye_AR.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
 x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
 post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
 post.samp <- post
 
 #Numerical summary of each parameter (mean, median, quantiles)
-summary<-summary(post)                     
-stats<-summary$statistics;  colnames(stats)
-quants<-summary$quantiles;  colnames(quants)
-statsquants <- cbind(stats,quants) 
+summary <- summary(post)                     
+stats <- summary$statistics;  colnames(stats)
+quants <- summary$quantiles;  colnames(quants)
+statsquants <- cbind(stats,quants)
 statsquants <- statsquants[,c(1,2,4,5,7,9)] #select statquant columns of interest: Mean, SD, Time-series SE,...
+
+data.frame(statsquants) %>%  #converts statsquants to a dataframe
+  tibble::rownames_to_column() %>%  #preserves the row names (otherwise, tibble (= table data frame) drops these)
+  mutate(CV = SD/Mean) %>% #calculates the CV
+  rename(Item=rowname, "Time series SE" = Time.series.SE, "2.5%"=X2.5.)-> statsquants #converting to a tibble messed
+                                                                                      #the column names, need
+                                                                                      #to rename these
+
 write.csv(statsquants, file= paste("results/Ricker_AR.csv") ) 
 
 #Density and time series plots
