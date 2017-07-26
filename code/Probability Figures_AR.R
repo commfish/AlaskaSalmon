@@ -6,8 +6,8 @@
 #i and z act as ways to change range of escapement based on stock size
 
 rm(list=ls(all=T)) #Remove previous variables.
-LowerB<-38000  #lower bound of recommended escapement goal range
-UpperB<-86000  #upper bound of recommended escapement goal range
+LowerB <- 38000  #lower bound of recommended escapement goal range
+UpperB <- 86000  #upper bound of recommended escapement goal range
 
 #load----
 #Load Packages
@@ -46,7 +46,7 @@ coda %>%
 
 f.profile <- function(i,z,xa.start, xa.end, data){ 
   xa = seq(xa.start, xa.end, by=i) 
-  x =(xa + i) * z
+  x = (xa + i) * z
   
   # create empty dataframes
   dat <- data.frame(S0 = rep(1, nrow(data)))

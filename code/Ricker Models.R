@@ -11,12 +11,12 @@ library(gdata)
 library(tidyverse)
 
 #data----
-brood<-read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
-sr<-brood[,2:3] #retrieve spawner recruit data from rows 2-3 of the brood dataset.
-colnames(sr)<-c("S","R") #rename the column names
-sr<-na.omit(sr)  #remove missing rows with missing values(na)
+brood <- read.table("data/Chilkoot_Sock.csv", header=TRUE, sep=",")
+sr <- brood[,2:3] #retrieve spawner recruit data from rows 2-3 of the brood dataset.
+colnames(sr) <- c("S","R") #rename the column names
+sr <- na.omit(sr)  #remove missing rows with missing values(na)
 sr$lnRS<-log(sr$R/sr$S) #add one column called lnRS
-n<-nrow(sr) #calculates the number of years of data.
+n <- nrow(sr) #calculates the number of years of data.
 sr.data<-list(n=n,S=sr$S, lnRS=sr$lnRS)
 
 
@@ -89,7 +89,7 @@ AR=function(){
   
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
   
-  mean2.lnRS[1]     <- mean1.lnRS[1] + phi * resid.red.0  
+  mean2.lnRS[1] <- mean1.lnRS[1] + phi * resid.red.0  
   for (y in 2:n) { mean2.lnRS[y] <- mean1.lnRS[y] + phi * resid.red[y-1] }   #AR1
   
   for(y in 1:n) {  mean1.lnRS[y] <- lnalpha - beta * S[y]  } #Ricker model
@@ -114,8 +114,8 @@ AR=function(){
   MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy < S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
-  S.star[1]<-0
-  step<-400
+  S.star[1] <- 0
+  step <- 400
   for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY) #not sure how to use results from this
     S.star[i] <- S.star[i-1]+step
     R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
@@ -135,23 +135,23 @@ write.model(AR, paste("code/Chilkoot_Sockeye_AR.txt", sep=""))
 #results
 #100000 iterations, 3 chains, 10000 burn-in period, thin by 100
 #Run the Ricker model that does NOT have autocorrelation
-inits1<-list(lnalpha=1.5, beta=0.0005, sigma.white=0.7, resid.red.0= 0)
-inits2<-list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
-inits3<-list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
-inits<-list(inits1, inits2, inits3)
+inits1 <- list(lnalpha=1.5, beta=0.0005, sigma.white=0.7, resid.red.0= 0)
+inits2 <- list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
+inits3 <- list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
+inits <- list(inits1, inits2, inits3)
 
 #parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY", "I90") No phi????
 parameters<-c("lnalpha","beta", "sigma.red","S.msy","MSY")
 ptm = proc.time()
 jmod <- jags.model(file='code/Chilkoot_Sockeye.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
-x<-update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
+x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
 post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
 post.samp <- post
 
 #Numerical summary of each parameter (mean, median, quantiles)
-summary<-summary(post)                     
-stats<-summary$statistics;  colnames(stats)
-quants<-summary$quantiles;  colnames(quants)
+summary <- summary(post)                     
+stats <- summary$statistics;  colnames(stats)
+quants <- summary$quantiles;  colnames(quants)
 statsquants <- cbind(stats,quants) 
 statsquants <- statsquants[,c(1,2,4,5,7,9)] #select columns of interest
 write.csv(statsquants, file= paste("results/Ricker.csv") )    
@@ -198,7 +198,7 @@ post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, th
 x <- as.array(post2)
 x <- data.frame(x)
 coda <- x[,1:3]
-coda<- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
+coda <- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write.csv(coda, file= paste("results/Ricker_coda.csv") ,row.names=FALSE)    # writes csv file
 
 
@@ -207,10 +207,10 @@ write.csv(coda, file= paste("results/Ricker_coda.csv") ,row.names=FALSE)    # wr
 ##########################################################################################################
 #Run Ricker WITH AR(1):  
 #100000 iterations, 3 chains, 10000 burn-in period, thin by 100
-inits1<-list(lnalpha=1.5, beta=0.0005, phi= 0.3, sigma.white=0.7, resid.red.0= 0)
-inits2<-list(lnalpha=2.0, beta=0.0010, phi=-0.1, sigma.white=0.5, resid.red.0=-1)
-inits3<-list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1)
-inits<-list(inits1, inits2, inits3)
+inits1 <- list(lnalpha=1.5, beta=0.0005, phi= 0.3, sigma.white=0.7, resid.red.0= 0)
+inits2 <- list(lnalpha=2.0, beta=0.0010, phi=-0.1, sigma.white=0.5, resid.red.0=-1)
+inits3 <- list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1)
+inits <- list(inits1, inits2, inits3)
 
 #parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
 parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi", "S.max", "S.eq", "S.msy", "U.msy", "R.msy")
@@ -227,7 +227,7 @@ statsquants <- cbind(stats,quants)
 statsquants <- statsquants[,c(1,2,4,5,7,9)] #select statquant columns of interest: Mean, SD, Time-series SE,...
 
 data.frame(statsquants) %>%  #converts statsquants to a dataframe
-  tibble::rownames_to_column() %>%  #preserves the row names (otherwise, tibble (= table data frame) drops these)
+  tibble::rownames_to_column() %>%  #preserves the row names (otherwise, tibble  drops these)
   mutate(CV = SD/Mean) %>% #calculates the CV
   rename(Item=rowname, "Time series SE" = Time.series.SE, "2.5%"=X2.5.)-> statsquants #converting to a tibble messed
                                                                                       #the column names, need
@@ -276,6 +276,6 @@ post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, th
 x <- as.array(post2)
 x <- data.frame(x)
 coda <- x[,1:3] 
-coda<- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
+coda <- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write.csv(coda, file= paste("results/Ricker_AR_coda.csv") ,row.names=FALSE) # writes csv file
 
