@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 *.Rproj
+*figures
+*processed
+*.pdf
+*.docx
+*Literature
