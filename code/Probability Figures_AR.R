@@ -11,9 +11,9 @@
 # i and z act as ways to change range of escapement based on stock size
 
 rm(list=ls(all=T))#Remove previous variables.
-LowerB <- 65000 #lower bound of recommended escapement goal range
-UpperB <- 140000 #upper bound of recommended escapement goal range
-
+LowerB <- 38000 #lower bound of recommended escapement goal range
+UpperB <- 86000 #upper bound of recommended escapement goal range
+SMSY<-54102#Lambert W from AR_quantiles_lambert
 #load----
 
 library(tidyverse)
@@ -48,35 +48,41 @@ library(scales)
 
 # data----
 
-coda <- read_csv("data/Coda.csv") #Load Data File
-Parameters <- read_csv("data/Parameters.csv") #Load Data File
-p_q_Nya <- read_csv("data/p_q_Nya.csv") #Load Data File
+coda <- read.csv("results/Ricker_AR_coda.csv") #Load Data File
+Parameters <- read.csv("data/Parameters.csv") #Load Data File
 
 #data clean----
 #Create profile parameters
-coda %>% 
-  mutate(S.eq.c = lnalpha.c/beta, 
-         S.msy.c = S.eq.c*(0.5-(((0.65*lnalpha.c)^1.27)/((8.7+lnalpha.c)^1.27))),
-         R.msy.c = S.msy.c*exp(lnalpha.c-beta*S.msy.c),
-         MSY.c = R.msy.c-S.msy.c,
-         Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
-
-# analysis----
-# create function for probability profiles and figures
-
-profile <-function(i,z,xa.start, xa.end, data){ 
+#coda %>% 
+#  mutate(S.eq.c = lnalpha.c/beta, 
+#         S.msy.c = S.eq.c*(0.5-(((0.65*lnalpha.c)^1.27)/((8.7+lnalpha.c)^1.27))),
+#         R.msy.c = S.msy.c*exp(lnalpha.c-beta*S.msy.c),
+#         MSY.c = R.msy.c-S.msy.c,
+#         Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
+coda %>% mutate(S.eq.c = lnalpha.c/beta, 
+                S.msy.c = (1-lambert_W0(exp(1-lnalpha.c)))/beta, #Lambert W
+                R.msy.c = S.msy.c*exp(lnalpha.c-beta*S.msy.c), 
+                MSY.c = R.msy.c-S.msy.c, 
+                Rmax = exp(lnalpha)*(1/beta)*exp(-1)) -> coda
+#analysis----
+#create function for probability profiles and figures
+profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){ 
   xa = seq(xa.start, xa.end, by=i) 
-  x =(xa + i) * z
-  
-  # create empty dataframes
-  dat <- data.frame(S0 = rep(0, nrow(data)))
-  dat1 <- data.frame(S0 = rep(1, nrow(data)))
-  
-  dat2 <- dat4 <- dat5 <- dat7 <- dat8 <- dat9 <- dat
-  dat3 <- dat6 <- dat1
-  
+  x =(xa+i)*z
+  # empty dataframes
+  dat <- data.frame(S0=rep(1, length(coda[,1])))
+  dat1 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat2 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat3 <- data.frame(S0=rep(1, length(coda[,1])))
+  dat4 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat5 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat6 <- data.frame(S0=rep(1, length(coda[,1])))
+  dat7 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat8 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat9 <- data.frame(S0=rep(0, length(coda[,1])))
+  dat10 <- data.frame(S0=rep(0, length(coda[,1])))
   for (i in 1:length(xa)){
-    dat [,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))
+    dat[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 0, ifelse(dat[,i]==0, 0,1))
     dat1[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.7*coda$MSY.c), 1,0)
     dat2[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.7*coda$Rmax), 1,0)
     dat3[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.8*coda$MSY.c), 0, ifelse(dat3[,i]==0, 0,1))
@@ -86,6 +92,7 @@ profile <-function(i,z,xa.start, xa.end, data){
     dat7[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i])-x[i])>(0.9*coda$MSY.c), 1,0)
     dat8[,i+1] = ifelse((x[i] * exp(coda$lnalpha.c-coda$beta*x[i]))>(0.9*coda$Rmax), 1,0)
     dat9[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])-x[i]
+    dat10[,i+1] = x[i]*exp(coda$lnalpha.c-coda$beta*x[i])
   }
   # Overfishing estimate ----
   f.over <- function(x){
@@ -100,12 +107,10 @@ profile <-function(i,z,xa.start, xa.end, data){
   of_0.8 <- f.over(dat3)
   of_0.9 <- f.over(dat6)
   
-  
   # Optimal yield estimate ----
   oy_0.7 <- f.over(dat1)
   oy_0.8 <- f.over(dat4)
   oy_0.9 <- f.over(dat7)
-  
   
   # Optimal recruitment ----
   or_0.7 <- f.over(dat2)
@@ -113,9 +118,7 @@ profile <-function(i,z,xa.start, xa.end, data){
   or_0.9 <- f.over(dat8)
   
   #Bind dataframes together
-  
   Y <- cbind(of_0.7,oy_0.7,or_0.7,of_0.8,oy_0.8,or_0.8,of_0.9,oy_0.9,or_0.9, c(0, x))
-  
   names(Y) <- c('of_0.7','oy_0.7','or_0.7','of_0.8','oy_0.8','or_0.8','of_0.9','oy_0.9',
                 'or_0.9','Escapement')
   
@@ -125,7 +128,6 @@ profile <-function(i,z,xa.start, xa.end, data){
                            q90=quantile(., 0.90, na.rm=T),
                            q10=quantile(., 0.10, na.rm=T),
                            q5=quantile(., 0.05, na.rm=T))) -> mq
-  
   names(mq) <- c(rep(('Median'),length(x)+1), 
                  rep(('q95'),length(x)+1), 
                  rep(('q90'),length(x)+1), 
@@ -135,74 +137,102 @@ profile <-function(i,z,xa.start, xa.end, data){
   qm <- data.frame(measure = names(mq), value = as.numeric(mq[1,]), Escapement=rep(c(0,x), length(unique(names(mq)))))
   qm <- spread(qm, measure, value)
   qm <- qm[c("q95", "q90", "Median","q10", "q5", "Escapement")]
-  
-  
-  
+  Y <- Y[c("oy_0.9", "oy_0.8", "or_0.9","or_0.8", "of_0.9", "of_0.8", "oy_0.7","or_0.7","of_0.7","Escapement")]
   write.csv(qm,("data/processed/QM.csv"), row.names=FALSE)
   write.csv(Y,("data/processed/Y.csv"), row.names=FALSE)
   
+  #confidence intervals ----
+  summarise_all(dat10, funs(median, 
+                            q95=quantile(., 0.95, na.rm=T), 
+                            q90=quantile(., 0.90, na.rm=T),
+                            q10=quantile(., 0.10, na.rm=T),
+                            q5=quantile(., 0.05, na.rm=T))) -> mq
+  names(mq) <- c(rep(('Median'),length(x)+1), 
+                 rep(('q95'),length(x)+1), 
+                 rep(('q90'),length(x)+1), 
+                 rep(('q10'),length(x)+1), 
+                 rep(('q5'),length(x)+1))
   
-  #create probability profile plots (0.7)
+  CI <- data.frame(measure = names(mq), value = as.numeric(mq[1,]), Escapement=rep(c(0,x), length(unique(names(mq)))))
+  CI <- spread(CI, measure, value)
+  CI <- CI[c("q95", "q90", "Median","q10", "q5", "Escapement")]
+  write.csv(CI,("data/processed/CI.csv"), row.names=FALSE)
   
+  #create probability profile plots (0.7, 0.8, 0.9, 0.8 & 0.9)
   Y %>% 
-    dplyr::select(Escapement, Optimal_Yield0.7 = oy_0.7, 
-                  Overfishing0.7 = of_0.7, Optimal_Recruitment0.7 = or_0.7) %>% 
+    dplyr::select(Escapement, oy_0.7, of_0.7,or_0.7) %>% 
     melt(., id.vars = 'Escapement') %>% 
     ggplot( aes(Escapement/1000, value, lty=variable))+geom_line()+
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.7.AR.png", dpi=200, width=8, height=5, units='in')
   
-  
   Y %>% 
-    dplyr::select(Escapement, Optimal_Yield0.8 = oy_0.8, 
-                  Overfishing0.8 = of_0.8, Optimal_Recruitment0.8 = or_0.8) %>% 
+    dplyr::select(Escapement, oy_0.8, of_0.8, or_0.8) %>% 
     melt(., id.vars = 'Escapement') %>% 
     ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.8.AR.png", dpi=200, width=8, height=5, units='in')
   
-  
   Y %>% 
-    dplyr::select(Escapement, Optimal_Yield0.9 = oy_0.9, 
-                  Overfishing0.9 = of_0.9, Optimal_Recruitment0.9 = or_0.9) %>% 
+    dplyr::select(Escapement, oy_0.9, of_0.9, or_0.9) %>% 
     melt(., id.vars = 'Escapement')  %>% 
     ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
     xlab('Escapement (1,000)')+ylab('Probability')+
     theme(legend.justification=c(1,0), legend.position=c(1,.5), 
           legend.key = element_blank(),legend.title=element_blank())
-  
   ggsave("figures/0.9.AR.png", dpi=200, width=8, height=5, units='in')
   
   
+  Y <- read.csv("data/processed/Y.csv")
+  Y["OY0.9"] <-Y$oy_0.9 
+  Y["OY0.8"] <-Y$oy_0.8 
+  Y<-subset(Y, select=c(Escapement, OY0.9,OY0.8))
+  mY1 <- melt(Y, id.vars='Escapement')
+  mY1["sra"] <-"Optimal Yield Profile"
+  mY1["max_pct"] <- ifelse(grepl("OY0.8",mY1$variable), 
+                           0.8,0.9)
   
-  Y %>% 
-    dplyr::select(Escapement, OY0.9 = oy_0.9, OY0.8 = of_0.8, OR0.9=or_0.9, 
-                  OR0.8 = or_0.8, OF0.9 = of_0.9, OF0.8 = of_0.8) %>% 
-    melt(., id.vars = 'Escapement')  %>% 
-    mutate(sra = ifelse(grepl("OY0",variable), "Yield Profile",
-                        ifelse(grepl("OR0",variable), "Recruitment Profile", "Overfishing Profile")),
-           max_pct = ifelse(grepl('0.8', variable), 0.8,0.9)) %>% 
-    ggplot(aes(Escapement, value, linetype = factor(max_pct)))+ 
-    geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
-              inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+
-    xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 100000))+
-    scale_linetype_discrete(name = "Percent of Max.")+
-    facet_grid(sra ~ .) + 
-    theme(legend.key = element_blank(),legend.justification=c(0,0), legend.position=c(.65,.35),
-          legend.background = element_rect(fill=alpha('white', 0.0)))+
-    scale_y_continuous("Probability", breaks = seq(0, 1, 0.2), limits = c(0, 1))
+  Y <- read.csv("data/processed/Y.csv")
+  Y["OF0.9"] <-Y$of_0.9 
+  Y["OF0.8"] <-Y$of_0.8 
+  Y<-subset(Y, select=c(Escapement, OF0.9,OF0.8))
+  mY2 <- melt(Y, id.vars='Escapement')
+  mY2["sra"] <-"Overfishing Profile"
+  mY2["max_pct"] <- ifelse(grepl("OF0.8",mY2$variable), 
+                           0.8,0.9)
   
-  ggsave("figures/Model_3/0.8_0.9.png", dpi=200, width=7, height=6, units='in')						  
-  
-  
-  
+  Y <- read.csv("data/processed/Y.csv")
+  Y["OR0.9"] <-Y$or_0.9 
+  Y["OR0.8"] <-Y$or_0.8 
+  Y<-subset(Y, select=c(Escapement, OR0.9,OR0.8))
+  mY3 <- melt(Y, id.vars='Escapement')
+  mY3["sra"] <-"Optimal Recruitment Profile"
+  mY3["max_pct"] <- ifelse(grepl("OR0.8",mY3$variable), 
+                           0.8,0.9)
+  mY4<-rbind(mY1,mY2, mY3)
+  mY4<-subset(mY4, select=c(Escapement, value, sra, max_pct))
+  mY4$Escapement<-as.numeric(mY4$Escapement)
+  mY4$value<-as.numeric(mY4$value)
+  mY4$max_pct<-as.factor(mY4$max_pct)
+  colnames(mY4)[2] <- "Probability"
+  windowsFonts(Times=windowsFont("TT Times New Roman"))
+  theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
+  Fig1<-ggplot(mY4, aes(x = Escapement, y = Probability, linetype = max_pct)) 
+  Fig1<-Fig1+geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
+                       inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+xlab('Escapement (S)')+
+    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 50000), limits = c(0, 350000))+
+    scale_linetype_discrete(name = "Percent of Maximum")+
+    facet_grid(sra ~ .) +geom_vline(xintercept=SMSY, lwd=1.25)
+  theme_bw()+ theme(legend.key = element_blank())+
+    theme(text=element_text(family="Times New Roman"))
+  ggsave("figures/0.8_0.9.png", dpi=200, dev='png', width=7, height=6, units='in')
+  theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
+  options(scipen=99999)
   
   ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
     geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
@@ -210,11 +240,8 @@ profile <-function(i,z,xa.start, xa.end, data){
     ylab('Expected Yield')+scale_y_continuous(labels = comma)+
     scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
     geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
-  
-  ggsave("figures/Model_3/expected_sustained_yield.png", dpi=200, width=8, height=5, units='in')
+  ggsave("figures/expected_sustained_yield.png", dpi=200, width=8, height=5, units='in')
 }
 #Run function
-profile(i=10,z=500,xa.start=0, xa.end=700, coda)#can change i,z, xa.start, xa.end
-
-
+profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
 
