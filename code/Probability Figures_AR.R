@@ -2,13 +2,8 @@
 # point estimate plots, yield plots)
 # created by Ben Williams (Ben.Williams@alaska.gov);Nov 3, 2016; 2017-7-4
 # Changes made by Sara Miller (Sara.Miller@alaska.gov); April 2017
-# Step#1: Create three csv files from OpenBUGS or JAGS output
-# a)lnalpha, beta, and lnalpha.c called 'coda' with 1000 values of each in columns with variable names
-# b)Parameters.csv
-# c)p_q_Nya.csv
-# Step#2: Set working directory to correct location.
-# Step#3: Run code.
-# i and z act as ways to change range of escapement based on stock size
+
+
 
 rm(list=ls(all=T))#Remove previous variables.
 LowerB <- 38000 #lower bound of recommended escapement goal range
@@ -25,31 +20,14 @@ theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
                   panel.grid.minor = element_blank()))
 
 
-# library(plyr)
-# library(reshape2)
-# library(lattice)
-# library(latticeExtra)
-# library(gridExtra)
-# library(ggplot2)
-# library(MASS)
-# library(survival)
-# library(scatterplot3d)
-# library(vcd)
-# library(grid)
-# library(calibrate)
 library(scales)
 # library(extrafont)
 # loadfonts(device="win") #only need to do this once; takes awhile to run!
 
-# library(RColorBrewer)
-# library(tidyverse)
-# library(reshape2)
-# library(cowplot)
-
 # data----
 
 coda <- read.csv("results/Ricker_AR_coda.csv") #Load Data File
-Parameters <- read.csv("data/Parameters.csv") #Load Data File
+Parameters <- read.csv("data/Parameters.csv") #Load Data File (make sure this file is updated)
 
 #data clean----
 #Create profile parameters
@@ -156,7 +134,134 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
   CI <- data.frame(measure = names(mq), value = as.numeric(mq[1,]), Escapement=rep(c(0,x), length(unique(names(mq)))))
   CI <- spread(CI, measure, value)
   CI <- CI[c("q95", "q90", "Median","q10", "q5", "Escapement")]
-  write.csv(CI,("data/processed/CI.csv"), row.names=FALSE)
+  write.csv(CI,("data/processed/CI.csv"), row.names=FALSE) #confidence intervals around S-R relationship
+  ################################################################################################
+  #Horesetail Plots
+  #Figure x.- Graphical summary of knowledge of spawner-recruitment relationship for Chilkat Lake 
+  #sockeye salmon as derived from age-structured state space model fitted to abundance, harvest, 
+  #and age data 1976-2015. Symbols are posterior medians of R and S; error bars bracket 95% credibility 
+  #intervals. Heavy dashed line is Ricker relationship constructed from ln(a) and b posterior medians,  
+  #Ricker relationships are also plotted for 50 paired values of ln(a) and b sampled from the posterior 
+  #probability distribution, representing plausible Ricker relationships that could have generated the 
+  #observed data.  Diagonal line is replacement line (R=S).
+  ################################################################################################
+  coda <- read.csv("data/Coda.csv") 
+  Parameters <- read.csv("data/Parameters.csv")
+  QM <- read.csv("data/processed/QM.csv")
+  CI<- read.csv("data/processed/CI.csv")
+  coda <- subset(coda, select = c(lnalpha.c, beta))
+  coda<-as.data.frame(coda[1:50,])#select first 50 rows of dataframe
+  QM<-subset(QM, select = c(Escapement))
+  num<-nrow(QM)
+  coda<-data.frame(lnalpha.c=rep(coda$lnalpha.c,each=num), beta=rep(coda$beta, each=num))
+  dataset<-cbind(coda,QM) #lnalpha.c, beta, and S
+  dataset['Recruitment']<-dataset$Escapement*exp(dataset$lnalpha.c-dataset$beta*dataset$Escapement)
+  dataset['Variable']<-data.frame(dataset=rep(1:50,each=num))
+  
+  myvars <- c("lnalpha.c", "beta")
+  Parameters<-Parameters[myvars]
+  Parameters<-data.frame(lnalpha.c=rep(Parameters$lnalpha.c,each=num), beta=rep(Parameters$beta, each=num))
+  row.has.na <- apply(Parameters, 1, function(x){any(is.na(x))})
+  sum(row.has.na)
+  final.filtered <- Parameters[!row.has.na,]
+  final.filtered <-cbind(final.filtered,QM)
+  final.filtered['Recruitment']<-final.filtered$Escapement*exp(final.filtered$lnalpha.c-final.filtered$beta*final.filtered$Escapement)
+  final.filtered['Variable']<-data.frame(final.filtered=rep(51,each=num))
+  dataset<-rbind(dataset, final.filtered)
+  dataset['Year']<-'NA'
+  dataset['R_val2.5pc']<-'0'
+  dataset['R_val97.5pc']<-'0'
+  dataset['S_val2.5pc']<-'0'
+  dataset['S_val97.5pc']<-'0'
+  Parameters <- read.csv('./data/Parameters.csv') #Load Data File
+  Parameters<-subset(Parameters, Parameters$Year>1975) 
+  Parameters<-subset(Parameters, Parameters$Year<2013) 
+  Parameters<-subset(Parameters, select = c(S_median, R_median,Year,R_val2.5pc,R_val97.5pc,S_val2.5pc,S_val97.5pc))
+  Parameters['lnalpha.c']<-'NA'
+  Parameters['beta']<-'NA'
+  Parameters['Escapement']<-Parameters$S_median
+  Parameters['Recruitment']<-Parameters$R_median
+  Parameters['Variable']<-52
+  Parameters<-subset(Parameters, select=c(lnalpha.c, beta, Escapement, Recruitment, Variable,Year,R_val2.5pc,R_val97.5pc,S_val2.5pc,S_val97.5pc))
+  dataset<-rbind(dataset, Parameters)
+  dataset$R_val2.5pc<-as.numeric(dataset$R_val2.5pc)
+  dataset$R_val97.5pc<-as.numeric(dataset$R_val97.5pc)
+  dataset$S_val2.5pc<-as.numeric(dataset$S_val2.5pc)
+  dataset$S_val97.5pc<-as.numeric(dataset$S_val97.5pc)
+  dataset <- dataset[order(dataset$Variable, dataset$Escapement),] 
+  windowsFonts(Times=windowsFont("TT Times New Roman"))
+  theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
+              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
+  Fig<-ggplot(data=dataset, aes(x=Escapement, y=Recruitment, group=Variable))+
+    geom_line(data=subset(dataset,dataset$Variable<52),linetype="solid", size=0.5, color="grey80")+
+    scale_y_continuous(labels = comma,breaks = seq(0, 650000, 50000), limits = c(0, 650000))+
+    scale_x_continuous(labels = comma,breaks = seq(0, 350000, 50000), limits = c(0, 350000))+ylab("Recruits (R)")+xlab("Spawners (S)")+
+    geom_line(data=dataset, aes(x=Escapement, y=Escapement, group=1),linetype="solid", size=1)+#replacement line
+    geom_line(data=subset(dataset,dataset$Variable==51),colour = "black", lty=2, size=2)+
+    geom_text(data=subset(dataset,dataset$Variable==52), aes(x=Escapement, y=Recruitment, label=Year,family="Times"))+
+    geom_errorbar(aes(ymax = R_val97.5pc, ymin=R_val2.5pc), width=0.20,linetype = 2, colour="grey50")+
+    geom_errorbarh(aes(xmax = S_val97.5pc, xmin=S_val2.5pc), height=0.20,linetype = 2,colour="grey50")
+  png(file='figures/Model 3/Horsetail_Plot.png', res=200, width=6, height=4, units ="in")  
+  grid.newpage()
+  pushViewport(viewport(layout=grid.layout(1,1)))
+  vplayout<-function(x,y) viewport (layout.pos.row=x, layout.pos.col=y)
+  print(Fig,vp=vplayout(1,1:1)) 
+  dev.off()
+  
+  dataset <- subset(dataset,Variable == 52) 
+  dataset['Escapement1']<-dataset$Escapement
+  dataset<-subset(dataset, select = -c(lnalpha.c, beta, Escapement))
+  dataset['Escapement']<-'NA'
+  CI['Year']<-'NA'
+  CI['R_val2.5pc']<-'NA'
+  CI['R_val97.5pc']<-'NA'
+  CI['S_val2.5pc']<-'NA'
+  CI['S_val97.5pc']<-'NA'
+  CI['Variable']<-51
+  CI['Recruitment']<-'NA'
+  CI['Escapement1']<-'NA'
+  dataset['Median']<-'NA'
+  dataset['q95']<-'NA'
+  dataset['q90']<-'NA'
+  dataset['q10']<-'NA'
+  dataset['q5']<-'NA'
+  dataset1<-rbind(dataset, CI)
+  dataset1$Escapement<-as.numeric(dataset1$Escapement)
+  dataset1$Median<-as.numeric(dataset1$Median)
+  dataset1$q5<-as.numeric(dataset1$q5)
+  dataset1$q95<-as.numeric(dataset1$q95)
+  dataset1$q10<-as.numeric(dataset1$q10)
+  dataset1$q90<-as.numeric(dataset1$q90)
+  dataset1$Recruitment<-as.numeric(dataset1$Recruitment)
+  dataset1$Escapement1<-as.numeric(dataset1$Escapement1)
+  dataset1$R_val2.5pc<-as.numeric(dataset1$R_val2.5pc)
+  dataset1$R_val97.5pc<-as.numeric(dataset1$R_val97.5pc)
+  dataset1$S_val2.5pc<-as.numeric(dataset1$S_val2.5pc)
+  dataset1$S_val97.5pc<-as.numeric(dataset1$S_val97.5pc)
+  
+  Fig1<-ggplot(data=dataset1, aes(x=Escapement, y=Median, group=Variable))+geom_line(size=2, lty=2, group=51)+
+    geom_ribbon(aes(ymin = q5, ymax = q95, group=51), alpha=.15)+
+    geom_ribbon(aes(ymin = q10, ymax = q90, group=51), alpha=.15)+
+    xlab('Spawners (S)')+
+    ylab('Recruits (R)')+scale_y_continuous(labels = comma)+
+    scale_x_continuous(labels = comma,breaks = seq(0, 350000, 50000), limits = c(0,350000))+
+    geom_line(aes(x=Escapement, y=Escapement, group=51),linetype="solid", size=1)+
+    geom_text(size=3, data=dataset1, aes(x=Escapement1, y=Recruitment, group=52, label=Year,family="Times", 
+                                         hjust = -0.1, vjust= -0.4))
+  Fig1<-Fig1+
+    geom_point(data=dataset1, aes(x=Escapement1, y=Recruitment, group=52),pch=16, size=1)+
+    geom_errorbar(data=dataset1, aes(x=Escapement1, ymax=R_val97.5pc, ymin=R_val2.5pc, group=52), width=0.2,linetype = 1, colour="grey50")
+  Fig1<-Fig1+
+    geom_point(data=dataset1, aes(x=Escapement1, y=Recruitment, group=52),pch=16, size=1)+
+    geom_errorbarh(data=dataset1, aes(x=Escapement1, y=Recruitment, xmax=S_val97.5pc, xmin=S_val2.5pc),na.rm=T,  linetype = 1, colour="grey50")
+  
+  png(file='figures/Model 3/Horsetail_Plot_Reconfig.png', res=200, width=6, height=4, units ="in")  
+  grid.newpage()
+  pushViewport(viewport(layout=grid.layout(1,1)))
+  vplayout<-function(x,y) viewport (layout.pos.row=x, layout.pos.col=y)
+  print(Fig1,vp=vplayout(1,1:1)) 
+  dev.off()
+  
   
   #create probability profile plots (0.7, 0.8, 0.9, 0.8 & 0.9)
   Y %>% 

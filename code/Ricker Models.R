@@ -35,8 +35,10 @@ pacf(residuals(mylm))
 
 Ricker = function(){
   
-  lnalpha ~ dunif(0, 10) 
-  beta ~ dunif(0, 10)                 
+  #lnalpha ~ dunif(0, 10) 
+  lnalpha ~ dnorm(0,1.0E-6)%_%T(0,3)#uninformative;*
+  beta ~ dnorm(0,1.0E-6)%_%T(0,)   #uninformative; normal distrib; constrained to be >0 *
+  #beta ~ dunif(0, 10)                 
   phi <- 0                #this model does not account for autocorrelation so phi is not used (thus, phi =0)
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
@@ -62,19 +64,19 @@ Ricker = function(){
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy...could use Scheuerell solution too....
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)  #Solves for recruits at Smsy
-  MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
+  #MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
   
-  S.star[1] <- 0
-  step <- 400
-  for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY)
-    S.star[i] <- S.star[i-1]+step
-    R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
-    SY[i] <- R.star[i] - S.star[i]
-    I90[i] <- step(SY[i] - 0.9 * MSY)  
+  #S.star[1] <- 0
+  #step <- 400
+  #for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY)
+    #S.star[i] <- S.star[i-1]+step
+    #R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
+    #SY[i] <- R.star[i] - S.star[i]
+    #I90[i] <- step(SY[i] - 0.9 * MSY)  
   }
-}
+
 
 #write the non-AR model to a text file to be called by WinBUGS
 model_file_loc=paste("code/Chilkoot_Sockeye.txt", sep="")
@@ -84,10 +86,11 @@ write.model(Ricker, paste("code/Chilkoot_Sockeye.txt", sep=""))
 
 # Ricker model WITH autocorrelation  ----
 AR = function(){
-  
-  lnalpha ~ dunif(0, 10)
-  beta ~ dunif(0, 10) 
-  phi ~ dunif(-1,1)                #AR(1) model so phi IS included and does not = zero
+  #lnalpha ~ dunif(0, 10) 
+  lnalpha ~ dnorm(0,1.0E-6)%_%T(0,3)#uninformative;*
+  beta ~ dnorm(0,1.0E-6)%_%T(0,)   #uninformative; normal distrib; constrained to be >0 *
+  #beta ~ dunif(0, 10)  
+  phi ~ dnorm(0,1.0E-6)%_%T(-0.98,0.98)#uninformative; btw -1 and 1
   sigma.white ~ dunif(0,10)
   resid.red.0 ~ dnorm(0,tau.red)
   
@@ -118,15 +121,15 @@ AR = function(){
   MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy < S.msy then MSY=0.
   #step(x) = 1 if x>=0; otherwise =0 if x<0
   
-  S.star[1] <- 0
-  step <- 400
-  for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY) #not sure how to use results from this
-    S.star[i] <- S.star[i-1]+step
-    R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
-    SY[i] <- R.star[i] - S.star[i]
-    I90[i] <- step(SY[i] - 0.9 * MSY)  
+  #S.star[1] <- 0
+  #step <- 400
+  #for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY) #not sure how to use results from this
+    #S.star[i] <- S.star[i-1]+step
+    #R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
+    #SY[i] <- R.star[i] - S.star[i]
+    #I90[i] <- step(SY[i] - 0.9 * MSY)  
   }
-}
+
 
 #write the AR model to a text file to be called by WinBUGS or JAGS
 model_file_loc=paste("code/Chilkoot_Sockeye_AR.txt", sep="")
@@ -143,8 +146,7 @@ inits2 <- list(lnalpha=2.0, beta=0.0010, sigma.white=0.5, resid.red.0=-1)
 inits3 <- list(lnalpha=2.5, beta=0.0020, sigma.white=0.3, resid.red.0= 1)
 inits <- list(inits1, inits2, inits3)
 
-#parameters <- c("lnalpha","beta", "sigma.red","S.msy","MSY", "I90") No phi????
-parameters <- c("lnalpha","beta", "sigma.red","S.msy","MSY")
+parameters <- c("lnalpha.c","beta", "sigma.red", "phi", "S.max", "S.eq", "S.msy", "U.msy", "R.msy",  "resid.red.0")
 ptm = proc.time()
 jmod <- jags.model(file='code/Chilkoot_Sockeye.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
 x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
@@ -152,14 +154,20 @@ post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
 post.samp <- post
 
 #Numerical summary of each parameter (mean, median, quantiles)
-
 summary <- summary(post)                     
 stats <- summary$statistics;  colnames(stats)
 quants <- summary$quantiles;  colnames(quants)
-statsquants <- cbind(stats,quants) 
-statsquants <- statsquants[,c(1,2,4,5,7,9)] #select columns of interest
+statsquants <- cbind(stats,quants)
+statsquants <- statsquants[,c(1,2,4,5,7,9)] #select statquant columns of interest: Mean, SD, Time-series SE,...
 
-write_csv(statsquants, "results/Ricker.csv")     
+data.frame(statsquants) %>%  #converts statsquants to a dataframe
+  tibble::rownames_to_column() %>%  #preserves the row names (otherwise, tibble  drops these)
+  mutate(CV = SD/Mean) %>% #calculates the CV
+  rename(Item=rowname, "Time series SE" = Time.series.SE, "2.5%"=X2.5.) -> statsquants #converting to a tibble messed
+#the column names, need
+#to rename these
+
+write.csv(statsquants, file= paste("results/Ricker.csv") ) 
 
 # Plots ----
 # Density and time series plots
@@ -205,7 +213,7 @@ dic.pD.summary <- data.frame(dev1, pD, dic.pD)
 write_csv(dic.pD.summary, "results/Ricker_DIC.csv")  
 
 #Create coda samples for horsetail plots and probability plots
-post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=10,n.burnin=10000) 
+post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=100,n.burnin=10000) 
 x <- as.array(post2)
 x <- data.frame(x)
 coda <- x[,1:3]
@@ -223,7 +231,7 @@ inits3 <- list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0=
 inits <- list(inits1, inits2, inits3)
 
 # parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
-parameters <- c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "phi", "S.max", "S.eq", "S.msy", "U.msy", "R.msy")
+parameters <- c("sigma.white", "lnalpha.c","beta", "sigma.red","alpha","lnalpha","S.msy", "phi", "S.max", "S.eq",  "U.msy", "R.msy",  "resid.red.0")
 jmod <- jags.model(file='code/Chilkoot_Sockeye_AR.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
 x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
 post <- coda.samples(jmod, parameters, n.iter=100000, thin=100, n.burnin=10000)
@@ -283,10 +291,31 @@ dic.pD.summary <- data.frame(dev1, pD, dic.pD)
 write_csv(dic.pD.summary, "results/Ricker_AR_DIC.csv")  
 
 #Create coda samples for horsetail plots and probability plots for the AR model
-post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=10,n.burnin=10000) 
+post2 <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=100,n.burnin=10000) 
 x <- as.array(post2)
 x <- data.frame(x)
 coda <- x[,1:3] 
 coda <- rename.vars(coda, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
 write_csv(coda, "results/Ricker_AR_coda.csv") # writes csv file
+
+#Create coda samples for lambert calc
+library(gsl)
+post2a <- coda.samples(jmod, c("lnalpha", "beta", "lnalpha.c"), n.iter=100000, thin=100,n.burnin=10000) 
+x <- as.array(post2a)
+x <- data.frame(x)
+coda1 <- x[,1:3]
+coda2 <- x[,4:6]
+coda3 <- x[,7:9]
+coda1<- rename.vars(coda1, from=c("beta.1","lnalpha.1","lnalpha.c.1"), to=c("beta","lnalpha", "lnalpha.c"))
+coda2<- rename.vars(coda2, from=c("beta.2","lnalpha.2","lnalpha.c.2"), to=c("beta","lnalpha", "lnalpha.c"))
+coda3<- rename.vars(coda3, from=c("beta.3","lnalpha.3","lnalpha.c.3"), to=c("beta","lnalpha", "lnalpha.c"))
+coda<-rbind(coda1,coda2,coda3)
+coda$Smsy_lambert <- (1-lambert_W0(exp(1-coda$lnalpha.c)))/coda$beta 
+coda$Umsy_lambert <- (1-lambert_W0(exp(1-coda$lnalpha.c))) 
+coda<-as.data.frame(coda)
+summary<-summary(coda) 
+q1<-apply(coda,2,quantile,probs=c(0,0.025,0.5,0.975,1))#percentiles
+write.csv(q1, file= paste("results/AR_quantiles_lambert.csv") )    
+write.csv(summary, file= paste("results/AR_lambert.csv") ) 
+write.csv(coda, file= paste("results/AR_coda_lambert.csv") ) 
 
