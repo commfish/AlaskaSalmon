@@ -260,8 +260,8 @@ profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.st
   Parameters<-subset(Parameters, select = c(S_median, R_median,Year))
   Parameters['lnalpha.c']<-'NA'
   Parameters['beta']<-'NA'
-  Parameters['Escapement']<-Parameters$S_median
-  Parameters['Recruitment']<-Parameters$R_median
+  Parameters['Escapement']<-Parameters$spawn
+  Parameters['Recruitment']<-Parameters$recruit
   Parameters['Variable']<-52
   Parameters<-subset(Parameters, select=c(lnalpha.c, beta, Escapement, Recruitment, Variable,Year))
   dataset<-rbind(dataset, Parameters)
@@ -331,91 +331,4 @@ profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.st
   print(Fig1,vp=vplayout(1,1:1)) 
   dev.off()
   
-  
-  #create probability profile plots (0.7, 0.8, 0.9, 0.8 & 0.9)
-  Y %>% 
-    dplyr::select(Escapement, oy_0.7, of_0.7,or_0.7) %>% 
-    melt(., id.vars = 'Escapement') %>% 
-    ggplot( aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
-    theme(legend.justification=c(1,0), legend.position=c(1,.5), 
-          legend.key = element_blank(),legend.title=element_blank())
-  ggsave("figures/0.7.AR.png", dpi=200, width=8, height=5, units='in')
-  
-  Y %>% 
-    dplyr::select(Escapement, oy_0.8, of_0.8, or_0.8) %>% 
-    melt(., id.vars = 'Escapement') %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
-    theme(legend.justification=c(1,0), legend.position=c(1,.5), 
-          legend.key = element_blank(),legend.title=element_blank())
-  ggsave("figures/0.8.AR.png", dpi=200, width=8, height=5, units='in')
-  
-  Y %>% 
-    dplyr::select(Escapement, oy_0.9, of_0.9, or_0.9) %>% 
-    melt(., id.vars = 'Escapement')  %>% 
-    ggplot(aes(Escapement/1000, value, lty=variable))+geom_line()+
-    xlab('Escapement (1,000)')+ylab('Probability')+
-    theme(legend.justification=c(1,0), legend.position=c(1,.5), 
-          legend.key = element_blank(),legend.title=element_blank())
-  ggsave("figures/0.9.AR.png", dpi=200, width=8, height=5, units='in')
-  
-  
-  Y <- read.csv("data/processed/Y.csv")
-  Y["OY0.9"] <-Y$oy_0.9 
-  Y["OY0.8"] <-Y$oy_0.8 
-  Y<-subset(Y, select=c(Escapement, OY0.9,OY0.8))
-  mY1 <- melt(Y, id.vars='Escapement')
-  mY1["sra"] <-"Optimal Yield Profile"
-  mY1["max_pct"] <- ifelse(grepl("OY0.8",mY1$variable), 
-                           0.8,0.9)
-  
-  Y <- read.csv("data/processed/Y.csv")
-  Y["OF0.9"] <-Y$of_0.9 
-  Y["OF0.8"] <-Y$of_0.8 
-  Y<-subset(Y, select=c(Escapement, OF0.9,OF0.8))
-  mY2 <- melt(Y, id.vars='Escapement')
-  mY2["sra"] <-"Overfishing Profile"
-  mY2["max_pct"] <- ifelse(grepl("OF0.8",mY2$variable), 
-                           0.8,0.9)
-  
-  Y <- read.csv("data/processed/Y.csv")
-  Y["OR0.9"] <-Y$or_0.9 
-  Y["OR0.8"] <-Y$or_0.8 
-  Y<-subset(Y, select=c(Escapement, OR0.9,OR0.8))
-  mY3 <- melt(Y, id.vars='Escapement')
-  mY3["sra"] <-"Optimal Recruitment Profile"
-  mY3["max_pct"] <- ifelse(grepl("OR0.8",mY3$variable), 
-                           0.8,0.9)
-  mY4<-rbind(mY1,mY2, mY3)
-  mY4<-subset(mY4, select=c(Escapement, value, sra, max_pct))
-  mY4$Escapement<-as.numeric(mY4$Escapement)
-  mY4$value<-as.numeric(mY4$value)
-  mY4$max_pct<-as.factor(mY4$max_pct)
-  colnames(mY4)[2] <- "Probability"
-  windowsFonts(Times=windowsFont("TT Times New Roman"))
-  theme_set(theme_bw(base_size=12,base_family='Times New Roman')+
-              theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
-  Fig1<-ggplot(mY4, aes(x = Escapement, y = Probability, linetype = max_pct)) 
-  Fig1<-Fig1+geom_rect(aes(xmin = LowerB, xmax = UpperB, ymin = 0, ymax = 1),
-                       inherit.aes = FALSE, fill = "grey80", alpha = 0.3)+geom_line()+xlab('Escapement (S)')+
-    scale_x_continuous(labels = comma, breaks = seq(0, 350000, 50000), limits = c(0, 350000))+
-    scale_linetype_discrete(name = "Percent of Maximum")+
-    facet_grid(sra ~ .) +geom_vline(xintercept=SMSY, lwd=1.25)
-  theme_bw()+ theme(legend.key = element_blank())+
-    theme(text=element_text(family="Times New Roman"))
-  ggsave("figures/0.8_0.9.png", dpi=200, dev='png', width=7, height=6, units='in')
-  theme_set(theme_bw()+theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()))
-  options(scipen=99999)
-  
-  ggplot(qm, aes(Escapement, Median))+geom_line(size=1)+
-    geom_ribbon(aes(ymin = q5, ymax = q95), alpha=.15)+
-    geom_ribbon(aes(ymin = q10, ymax = q90), alpha=.15)+ xlab('Escapement (S)')+
-    ylab('Expected Yield')+scale_y_continuous(labels = comma)+
-    scale_x_continuous(labels = comma,breaks = seq(0, 300000, 50000), limits = c(0,300000))+
-    geom_vline(xintercept = LowerB,linetype = "longdash" )+geom_vline(xintercept = UpperB ,linetype = "longdash")
-  ggsave("figures/expected_sustained_yield.png", dpi=200, width=8, height=5, units='in')
-}
-#Run function
-profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
-
+ 
