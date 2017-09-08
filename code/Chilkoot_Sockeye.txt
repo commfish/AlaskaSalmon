@@ -1,7 +1,7 @@
 model
 {
-    lnalpha ~ dunif(0.00000E+00, 10)
-    beta ~ dunif(0.00000E+00, 10)
+    lnalpha ~ dnorm(0.00000E+00, 1.00000E-06)  T(0.00000E+00, 3)
+    beta ~ dnorm(0.00000E+00, 1.00000E-06)  T(0.00000E+00, )
     phi <- 0.00000E+00
     sigma.white ~ dunif(0.00000E+00, 10)
     resid.red.0 ~ dnorm(0.00000E+00, tau.red)
@@ -32,13 +32,4 @@ model
     S.msy <- S.eq * (0.5 - 0.07 * lnalpha.c)
     U.msy <- lnalpha.c * (0.5 - 0.07 * lnalpha.c)
     R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)
-    MSY <- step(R.msy - S.msy) * (R.msy - S.msy)
-    S.star[1] <- 0.00000E+00
-    step <- 400
-    for (i in 2:501) {
-        S.star[i] <- S.star[i - 1] + step
-        R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i])
-        SY[i] <- R.star[i] - S.star[i]
-        I90[i] <- step(SY[i] - 0.9 * MSY)
-    }
 }
