@@ -1,4 +1,4 @@
-Year,S_median,R_median,lnalpha,beta,lnalpha.c
+Year,spawn,recruit,lnalpha,beta,lnalpha.c
 1976,71291,123362,1.65,1.39E-05,2.142442498
 1977,97368,292305,,,
 1978,35454,279209,,,
