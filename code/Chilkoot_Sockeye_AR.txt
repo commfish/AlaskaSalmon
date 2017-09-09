@@ -3,7 +3,8 @@ model
     lnalpha ~ dnorm(0.00000E+00, 1.00000E-06)  T(0.00000E+00, 3)
     beta ~ dnorm(0.00000E+00, 1.00000E-06)  T(0.00000E+00, )
     phi ~ dnorm(0.00000E+00, 1.00000E-06)  T(-0.98, 0.98)
-    sigma.white ~ dunif(0.00000E+00, 10)
+    sigma.white ~ dnorm(0.00000E+00, 1.00000E-06)  T(0.00000E+00, 
+        )
     resid.red.0 ~ dnorm(0.00000E+00, tau.red)
     for (y in 1:n) {
         lnRS[y] ~ dnorm(mean2.lnRS[y], tau.white)
