@@ -6,14 +6,15 @@
 rm(list=ls(all=T))#Remove previous variables.
 LowerB <- 38000 #lower bound of recommended escapement goal range
 UpperB <- 86000 #upper bound of recommended escapement goal range
-SMSY<-54102#Lambert W from AR_quantiles_lambert
+SMSY<-53280#Lambert W from AR_quantiles_lambert
 #load----
 
 library(tidyverse)
 library(reshape2)
 library(extrafont)
 library(grid)
-
+library(plyr)
+library(gsl)
 windowsFonts(Times=windowsFont("TT Times New Roman"))
 theme_set(theme_bw(base_size=12,base_family='Times New Roman')+ 
             theme(panel.grid.major = element_blank(),
@@ -221,7 +222,7 @@ profile <-function(i,z,xa.start, xa.end,lnalpha.c, beta){
 }
 #Run function
 profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
-
+#profile(i=2,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.start, xa.end
   ################################################################################################
   #Horesetail Plots
   #Figure x.- Graphical summary of knowledge of spawner-recruitment relationship for Chilkat Lake 
@@ -232,7 +233,7 @@ profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.st
   #probability distribution, representing plausible Ricker relationships that could have generated the 
   #observed data.  Diagonal line is replacement line (R=S).
   ################################################################################################
-  coda <- read.csv("data/Coda.csv") 
+  coda <- read.csv("results/Ricker_AR_coda.csv") #Load Data File
   Parameters <- read.csv("data/Parameters.csv")
   QM <- read.csv("data/processed/QM.csv")
   CI<- read.csv("data/processed/CI.csv")
@@ -314,6 +315,7 @@ profile(i=10,z=500,xa.start=0, xa.end=700,lnalpha.c, beta)#can change i,z, xa.st
     xlab('Spawners (S)')+
     ylab('Recruits (R)')+scale_y_continuous(labels = comma)+
     scale_x_continuous(labels = comma,breaks = seq(0, 350000, 50000), limits = c(0,350000))+
+    scale_y_continuous(labels = comma,breaks = seq(0, 600000, 100000), limits = c(0,600000))+
     geom_line(aes(x=Escapement, y=Escapement, group=51),linetype="solid", size=1)+
     geom_text(size=3, data=dataset1, aes(x=Escapement1, y=Recruitment, group=52, label=Year,family="Times", 
                                          hjust = -0.1, vjust= -0.4))

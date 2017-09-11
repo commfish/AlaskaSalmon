@@ -35,12 +35,10 @@ pacf(residuals(mylm))
 
 Ricker = function(){
   
-  #lnalpha ~ dunif(0, 10) 
   lnalpha ~ dnorm(0,1.0E-6)%_%T(0,3)#uninformative;*
   beta ~ dnorm(0,1.0E-6)%_%T(0,)   #uninformative; normal distrib; constrained to be >0 *
-  #beta ~ dunif(0, 10)                 
   phi <- 0                #this model does not account for autocorrelation so phi is not used (thus, phi =0)
-  sigma.white ~ dunif(0,10)
+  sigma.white ~ dnorm(0,1.0E-6)%_%T(0,)  
   resid.red.0 ~ dnorm(0,tau.red)
   
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
@@ -57,24 +55,12 @@ Ricker = function(){
   sigma.red <- 1 / sqrt(tau.red) 
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
-  #lnalpha.c <- lnalpha
   alpha <- exp(lnalpha)  #exponentiate to solve for alpha
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c) #Hilborn approximation of Smsy...could use Scheuerell solution too....
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)  #Solves for recruits at Smsy
-  #MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy< S.msy then MSY=0.
-  #step(x) = 1 if x>=0; otherwise =0 if x<0
-  
-  
-  #S.star[1] <- 0
-  #step <- 400
-  #for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY)
-    #S.star[i] <- S.star[i-1]+step
-    #R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
-    #SY[i] <- R.star[i] - S.star[i]
-    #I90[i] <- step(SY[i] - 0.9 * MSY)  
   }
 
 
@@ -91,7 +77,7 @@ AR = function(){
   beta ~ dnorm(0,1.0E-6)%_%T(0,)   #uninformative; normal distrib; constrained to be >0 *
   #beta ~ dunif(0, 10)  
   phi ~ dnorm(0,1.0E-6)%_%T(-0.98,0.98)#uninformative; btw -1 and 1
-  sigma.white ~ dunif(0,10)
+  sigma.white ~ dnorm(0,1.0E-6)%_%T(0,)   #uninformative; normal distrib; constrained to be >0 *
   resid.red.0 ~ dnorm(0,tau.red)
   
   for(y in 1:n) {lnRS[y] ~ dnorm(mean2.lnRS[y],tau.white) }
@@ -106,28 +92,14 @@ AR = function(){
   tau.white <- 1 / sigma.white / sigma.white        
   tau.red <- tau.white * (1-phi*phi)
   sigma.red <- 1 / sqrt(tau.red)
-  #sigma.white<-1/sqrt(tau.white)
-  #sigma<-sigma.red
   
   lnalpha.c <- lnalpha + (sigma.red * sigma.red / 2)  #adjust for calculating means of R.msy, S.msy etc.
-  #lnalpha.c <- lnalpha
   alpha <- exp(lnalpha) #exponentiate to solve for alpha 
   S.max <- 1 / beta
   S.eq <- S.max * lnalpha.c 
   S.msy <- S.eq * (0.5 - 0.07*lnalpha.c)
   U.msy <- lnalpha.c * (0.5 - 0.07*lnalpha.c)
   R.msy <- S.msy * exp(lnalpha.c - beta * S.msy)
-  
-  MSY <- step(R.msy-S.msy)*(R.msy-S.msy) #if R.msy < S.msy then MSY=0.
-  #step(x) = 1 if x>=0; otherwise =0 if x<0
-  
-  #S.star[1] <- 0
-  #step <- 400
-  #for (i in 2:501) {                      #LOOP TO FIND Pr(SY>90%MSY) #not sure how to use results from this
-    #S.star[i] <- S.star[i-1]+step
-    #R.star[i] <- S.star[i] * exp(lnalpha.c - beta * S.star[i]) 
-    #SY[i] <- R.star[i] - S.star[i]
-    #I90[i] <- step(SY[i] - 0.9 * MSY)  
   }
 
 
@@ -250,7 +222,6 @@ inits2 <- list(lnalpha=2.0, beta=0.0010, phi=-0.1, sigma.white=0.5, resid.red.0=
 inits3 <- list(lnalpha=2.5, beta=0.0020, phi= 0.2, sigma.white=0.3, resid.red.0= 1)
 inits <- list(inits1, inits2, inits3)
 
-# parameters<-c("lnalpha.c","beta", "sigma.red","S.msy", "MSY", "I90" )
 parameters <- c("sigma.white", "lnalpha.c","beta", "sigma.red","alpha","lnalpha","S.msy", "phi", "S.max", "S.eq",  "U.msy", "R.msy",  "resid.red.0")
 jmod <- jags.model(file='code/Chilkoot_Sockeye_AR.txt', data=sr.data, n.chains=3, inits=inits, n.adapt=1000) 
 x <- update(jmod, n.iter=100000, by=100, progress.bar='text', DIC=T, n.burnin=10000) 
